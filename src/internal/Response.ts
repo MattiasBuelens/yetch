@@ -1,7 +1,7 @@
 import { Headers, HeadersInit } from './Headers'
 import { Body } from './Body'
 
-var redirectStatuses = [301, 302, 303, 307, 308]
+const redirectStatuses = [301, 302, 303, 307, 308]
 
 export interface ResponseInit {
   headers?: HeadersInit
@@ -44,7 +44,7 @@ class Response extends Body {
   }
 
   static error(): Response {
-    var response = new Response(null, { status: 0, statusText: '' })
+    const response = new Response(null, { status: 0, statusText: '' })
     response.type = 'error'
     return response
   }

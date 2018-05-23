@@ -12,10 +12,10 @@ export interface RequestInit {
 }
 
 // HTTP methods whose capitalization should be normalized
-var methods: string[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+const methods: string[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
 
 function normalizeMethod(method: string): string {
-  var upcased = method.toUpperCase()
+  const upcased = method.toUpperCase()
   return (methods.indexOf(upcased) > -1) ? upcased : method
 }
 
@@ -32,7 +32,7 @@ class Request extends Body {
   constructor(input?: Request | string, options?: RequestInit) {
     super()
     options = options || {}
-    var body = options.body
+    const body = options.body
 
     if (input instanceof Request) {
       if (input.bodyUsed) {

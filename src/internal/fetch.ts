@@ -5,15 +5,15 @@ import { Request } from './Request'
 import { Response } from './Response'
 
 function parseHeaders(rawHeaders) {
-  var headers = new Headers()
+  const headers = new Headers()
   // Replace instances of \r\n and \n followed by at least one space or horizontal tab with a space
   // https://tools.ietf.org/html/rfc7230#section-3.2
-  var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
+  const preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
   preProcessedHeaders.split(/\r?\n/).forEach(function(line) {
-    var parts = line.split(':')
-    var key = parts.shift().trim()
+    const parts = line.split(':')
+    const key = parts.shift().trim()
     if (key) {
-      var value = parts.join(':').trim()
+      const value = parts.join(':').trim()
       headers.append(key, value)
     }
   })
@@ -22,26 +22,26 @@ function parseHeaders(rawHeaders) {
 
 function fetch(input, init) {
   return new Promise(function (resolve, reject) {
-    var request = new Request(input, init)
+    const request = new Request(input, init)
 
     if (request.signal && request.signal.aborted) {
       return reject(new DOMException('Aborted', 'AbortError'))
     }
 
-    var xhr = new XMLHttpRequest()
+    const xhr = new XMLHttpRequest()
 
     function abortXhr() {
       xhr.abort()
     }
 
     xhr.onload = function () {
-      var options = {
+      const options = {
         status: xhr.status,
         statusText: xhr.statusText,
         headers: parseHeaders(xhr.getAllResponseHeaders() || '')
       }
       options.url = 'responseURL' in xhr ? xhr.responseURL : options.headers.get('X-Request-URL')
-      var body = 'response' in xhr ? xhr.response : xhr.responseText
+      const body = 'response' in xhr ? xhr.response : xhr.responseText
       resolve(new Response(body, options))
     }
 

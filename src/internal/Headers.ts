@@ -19,9 +19,9 @@ function normalizeValue(value: any): string {
 
 // Build a destructive iterator for the value list
 function iteratorFor<T>(items: T[]): IterableIterator<T> {
-  var iterator = {
+  const iterator = {
     next: function () {
-      var value = items.shift()
+      const value = items.shift()
       return { done: value === undefined, value: value }
     }
   } as IterableIterator<T>
@@ -62,7 +62,7 @@ class Headers {
   append(name: string, value: string): void {
     name = normalizeName(name)
     value = normalizeValue(value)
-    var oldValue = this.map[name]
+    const oldValue = this.map[name]
     this.map[name] = oldValue ? oldValue + ',' + value : value
   }
 
@@ -85,7 +85,7 @@ class Headers {
 
   forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any,
            thisArg?: any): void {
-    for (var name in this.map) {
+    for (const name in this.map) {
       if (this.map.hasOwnProperty(name)) {
         callback.call(thisArg, this.map[name], name, this)
       }
@@ -93,19 +93,19 @@ class Headers {
   }
 
   keys(): IterableIterator<string> {
-    var items: string[] = []
+    const items: string[] = []
     this.forEach(function (value, name) { items.push(name) })
     return iteratorFor(items)
   }
 
   values(): IterableIterator<string> {
-    var items: string[] = []
+    const items: string[] = []
     this.forEach(function (value) { items.push(value) })
     return iteratorFor(items)
   }
 
   entries(): IterableIterator<[string, string]> {
-    var items: Array<[string, string]> = []
+    const items: Array<[string, string]> = []
     this.forEach(function (value, name) { items.push([name, value]) })
     return iteratorFor(items)
   }

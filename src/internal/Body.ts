@@ -14,7 +14,7 @@ export type TypedArray
 
 export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | URLSearchParams | string | null;
 
-var viewClasses = [
+const viewClasses = [
   '[object Int8Array]',
   '[object Uint8Array]',
   '[object Uint8ClampedArray]',
@@ -26,11 +26,11 @@ var viewClasses = [
   '[object Float64Array]'
 ]
 
-var isDataView = function (obj: any): obj is DataView {
+const isDataView = function (obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
-var isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function (obj) {
+const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function (obj) {
   return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
 }
 
@@ -53,24 +53,24 @@ function fileReaderReady<T>(reader: FileReader): Promise<T> {
 }
 
 function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-  var reader = new FileReader()
-  var promise = fileReaderReady<ArrayBuffer>(reader)
+  const reader = new FileReader()
+  const promise = fileReaderReady<ArrayBuffer>(reader)
   reader.readAsArrayBuffer(blob)
   return promise
 }
 
 function readBlobAsText(blob: Blob): Promise<string> {
-  var reader = new FileReader()
-  var promise = fileReaderReady<string>(reader)
+  const reader = new FileReader()
+  const promise = fileReaderReady<string>(reader)
   reader.readAsText(blob)
   return promise
 }
 
 function readArrayBufferAsText(buf: ArrayBuffer): string {
-  var view = new Uint8Array(buf)
-  var chars = new Array(view.length)
+  const view = new Uint8Array(buf)
+  const chars = new Array(view.length)
 
-  for (var i = 0; i < view.length; i++) {
+  for (let i = 0; i < view.length; i++) {
     chars[i] = String.fromCharCode(view[i])
   }
   return chars.join('')
@@ -80,19 +80,19 @@ function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
   if (buf.slice) {
     return buf.slice(0)
   } else {
-    var view = new Uint8Array(buf.byteLength)
+    const view = new Uint8Array(buf.byteLength)
     view.set(new Uint8Array(buf))
     return view.buffer
   }
 }
 
 function decode(body: string): FormData {
-  var form = new FormData()
+  const form = new FormData()
   body.trim().split('&').forEach(function (bytes) {
     if (bytes) {
-      var split = bytes.split('=')
-      var name = split.shift()!.replace(/\+/g, ' ')
-      var value = split.join('=').replace(/\+/g, ' ')
+      const split = bytes.split('=')
+      const name = split.shift()!.replace(/\+/g, ' ')
+      const value = split.join('=').replace(/\+/g, ' ')
       form.append(decodeURIComponent(name), decodeURIComponent(value))
     }
   })
@@ -144,7 +144,7 @@ abstract class Body {
   }
 
   text(): Promise<string> {
-    var rejected = consumed(this)
+    const rejected = consumed(this)
     if (rejected) {
       return rejected
     }
@@ -172,7 +172,7 @@ abstract class Body {
 
 if (support.blob) {
   Body.prototype.blob = function (): Promise<Blob> {
-    var rejected = consumed(this)
+    const rejected = consumed(this)
     if (rejected) {
       return rejected
     }
