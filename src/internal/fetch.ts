@@ -40,9 +40,9 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
         status: xhr.status,
         statusText: xhr.statusText,
         headers: headers,
-        url: 'responseURL' in xhr ? xhr.responseURL : headers.get('X-Request-URL')
+        url: xhr.responseURL || headers.get('X-Request-URL')
       }
-      const body = 'response' in xhr ? xhr.response : xhr.responseText
+      const body = xhr.response || xhr.responseText
       resolve(new Response(body, options))
     }
 
