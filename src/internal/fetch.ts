@@ -85,5 +85,5 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
   })
 }
 
-fetch.polyfill = true
+(fetch as any).polyfill = true
 export { fetch }

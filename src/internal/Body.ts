@@ -136,11 +136,11 @@ abstract class Body {
   bodyUsed: boolean = false
   abstract headers: Headers
 
-  protected _bodyInit!: BodyInit
-  private _bodyText?: string
-  private _bodyBlob?: Blob
-  private _bodyFormData?: FormData
-  private _bodyArrayBuffer?: ArrayBuffer
+  _bodyInit!: BodyInit
+  _bodyText?: string
+  _bodyBlob?: Blob
+  _bodyFormData?: FormData
+  _bodyArrayBuffer?: ArrayBuffer
 
   _initBody(body: BodyInit) {
     this._bodyInit = body
