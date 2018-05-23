@@ -1,5 +1,11 @@
 declare global {
   interface Window {
+    fetch?: typeof fetch
+    Headers?: typeof Headers
+    Request?: typeof Request
+    Response?: typeof Response
+    AbortController?: typeof AbortController
+    AbortSignal?: typeof AbortSignal
     DOMException?: typeof DOMException
   }
 }
