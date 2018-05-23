@@ -26,6 +26,22 @@ const viewClasses = [
   '[object Float64Array]'
 ]
 
+const isBlob = function (obj: any): obj is Blob {
+  return obj && Blob.prototype.isPrototypeOf(obj)
+}
+
+const isFormData = function (obj: any): obj is FormData {
+  return obj && FormData.prototype.isPrototypeOf(obj)
+}
+
+const isURLSearchParams = function (obj: any): obj is URLSearchParams {
+  return obj && URLSearchParams.prototype.isPrototypeOf(obj)
+}
+
+const isArrayBuffer = function (obj: any): obj is ArrayBuffer {
+  return obj && ArrayBuffer.prototype.isPrototypeOf(obj)
+}
+
 const isDataView = function (obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
@@ -116,18 +132,18 @@ abstract class Body {
       this._bodyText = ''
     } else if (typeof body === 'string') {
       this._bodyText = body
-    } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-      this._bodyBlob = body as Blob
-    } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-      this._bodyFormData = body as FormData
-    } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-      this._bodyText = (body as URLSearchParams).toString()
+    } else if (support.blob && isBlob(body)) {
+      this._bodyBlob = body
+    } else if (support.formData && isFormData(body)) {
+      this._bodyFormData = body
+    } else if (support.searchParams && isURLSearchParams(body)) {
+      this._bodyText = body.toString()
     } else if (support.arrayBuffer && support.blob && isDataView(body)) {
       this._bodyArrayBuffer = bufferClone(body.buffer)
       // IE 10-11 can't handle a DataView body.
       this._bodyInit = new Blob([this._bodyArrayBuffer])
-    } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
-      this._bodyArrayBuffer = bufferClone(body as (ArrayBuffer | ArrayBufferView))
+    } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
+      this._bodyArrayBuffer = bufferClone(body)
     } else {
       throw new Error('unsupported BodyInit type')
     }
@@ -137,7 +153,7 @@ abstract class Body {
         this.headers.set('content-type', 'text/plain;charset=UTF-8')
       } else if (this._bodyBlob && this._bodyBlob.type) {
         this.headers.set('content-type', this._bodyBlob.type)
-      } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
+      } else if (support.searchParams && isURLSearchParams(body)) {
         this.headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
       }
     }
