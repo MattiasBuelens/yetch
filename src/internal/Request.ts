@@ -32,7 +32,7 @@ class Request extends Body {
   constructor(input?: Request | string, options?: RequestInit) {
     super()
     options = options || {}
-    const body = options.body
+    let body = options.body || null
 
     if (input instanceof Request) {
       if (input.bodyUsed) {

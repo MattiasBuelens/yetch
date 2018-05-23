@@ -85,7 +85,7 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
       }
     }
 
-    xhr.send(typeof request._bodyInit === 'undefined' ? null : request._bodyInit)
+    xhr.send(request._bodyInit === undefined ? null : request._bodyInit)
   })
 }
 

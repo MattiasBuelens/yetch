@@ -224,7 +224,7 @@ if (support.blob) {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
     } else {
-      return this.blob().then(readBlobAsArrayBuffer)
+      return this.blob!().then(readBlobAsArrayBuffer)
     }
   }
 }

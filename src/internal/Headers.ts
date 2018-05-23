@@ -76,7 +76,7 @@ class Headers implements Iterable<[string, string]> {
     delete this.map[normalizeName(name)]
   }
 
-  get(name: string) {
+  get(name: string): string | null {
     name = normalizeName(name)
     return this.has(name) ? this.map[name] : null
   }
