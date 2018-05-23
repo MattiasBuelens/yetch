@@ -57,7 +57,7 @@ class Request extends Body {
       }
     } else {
       this.url = String(input)
-      credentials = 'omit'
+      credentials = 'same-origin'
       method = 'GET'
       mode = 'cors'
       signal = null

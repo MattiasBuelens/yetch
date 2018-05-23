@@ -60,11 +60,7 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
 
     xhr.open(request.method, request.url, true)
 
-    if (request.credentials === 'include') {
-      xhr.withCredentials = true
-    } else if (request.credentials === 'omit') {
-      xhr.withCredentials = false
-    }
+    xhr.withCredentials = (request.credentials === 'include')
 
     if ('responseType' in xhr && support.blob) {
       xhr.responseType = 'blob'
