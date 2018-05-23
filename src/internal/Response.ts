@@ -1,7 +1,12 @@
 import { Headers } from './Headers'
 import { Body } from './Body'
 
-function Response(bodyInit, options) {
+var redirectStatuses = [301, 302, 303, 307, 308]
+
+class Response extends Body {
+
+constructor(bodyInit, options) {
+  super()
   if (!options) {
     options = {}
   }
@@ -15,9 +20,7 @@ function Response(bodyInit, options) {
   this._initBody(bodyInit)
 }
 
-Body.call(Response.prototype)
-
-Response.prototype.clone = function () {
+clone() {
   return new Response(this._bodyInit, {
     status: this.status,
     statusText: this.statusText,
@@ -26,20 +29,20 @@ Response.prototype.clone = function () {
   })
 }
 
-Response.error = function () {
+static error() {
   var response = new Response(null, { status: 0, statusText: '' })
   response.type = 'error'
   return response
 }
 
-var redirectStatuses = [301, 302, 303, 307, 308]
-
-Response.redirect = function (url, status) {
+static redirect(url, status) {
   if (redirectStatuses.indexOf(status) === -1) {
     throw new RangeError('Invalid status code')
   }
 
   return new Response(null, { status: status, headers: { location: url } })
+}
+
 }
 
 export { Response }
