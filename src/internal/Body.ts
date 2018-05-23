@@ -1,5 +1,5 @@
 import { support } from './support'
-import { Headers } from './Headers';
+import { Headers } from './Headers'
 
 var viewClasses = [
   '[object Int8Array]',
@@ -88,14 +88,14 @@ function decode(body: string): FormData {
 
 abstract class Body {
 
-  bodyUsed: boolean = false;
-  abstract headers: Headers;
+  bodyUsed: boolean = false
+  abstract headers: Headers
 
-  private _bodyInit: BodyInit;
-  private _bodyText?: string;
-  private _bodyBlob?: Blob;
-  private _bodyFormData?: FormData;
-  private _bodyArrayBuffer?: ArrayBuffer;
+  private _bodyInit: BodyInit
+  private _bodyText?: string
+  private _bodyBlob?: Blob
+  private _bodyFormData?: FormData
+  private _bodyArrayBuffer?: ArrayBuffer
 
   _initBody(body: BodyInit) {
     this._bodyInit = body
