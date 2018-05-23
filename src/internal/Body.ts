@@ -12,22 +12,22 @@ var viewClasses = [
   '[object Float64Array]'
 ]
 
-var isDataView = function (obj) {
+var isDataView = function (obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
-var isArrayBufferView = ArrayBuffer.isView || function (obj) {
+var isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function (obj) {
   return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
 }
 
-function consumed(body) {
+function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
     return Promise.reject(new TypeError('Already read'))
   }
   body.bodyUsed = true
 }
 
-function fileReaderReady(reader) {
+function fileReaderReady<T>(reader: FileReader): Promise<T> {
   return new Promise(function (resolve, reject) {
     reader.onload = function () {
       resolve(reader.result)
@@ -38,21 +38,21 @@ function fileReaderReady(reader) {
   })
 }
 
-function readBlobAsArrayBuffer(blob) {
+function readBlobAsArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   var reader = new FileReader()
-  var promise = fileReaderReady(reader)
+  var promise = fileReaderReady<ArrayBuffer>(reader)
   reader.readAsArrayBuffer(blob)
   return promise
 }
 
-function readBlobAsText(blob) {
+function readBlobAsText(blob: Blob): Promise<string> {
   var reader = new FileReader()
-  var promise = fileReaderReady(reader)
+  var promise = fileReaderReady<string>(reader)
   reader.readAsText(blob)
   return promise
 }
 
-function readArrayBufferAsText(buf) {
+function readArrayBufferAsText(buf: ArrayBuffer): string {
   var view = new Uint8Array(buf)
   var chars = new Array(view.length)
 
@@ -62,7 +62,7 @@ function readArrayBufferAsText(buf) {
   return chars.join('')
 }
 
-function bufferClone(buf) {
+function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
   if (buf.slice) {
     return buf.slice(0)
   } else {
@@ -72,12 +72,12 @@ function bufferClone(buf) {
   }
 }
 
-function decode(body) {
+function decode(body: string): FormData {
   var form = new FormData()
   body.trim().split('&').forEach(function (bytes) {
     if (bytes) {
       var split = bytes.split('=')
-      var name = split.shift().replace(/\+/g, ' ')
+      var name = split.shift()!.replace(/\+/g, ' ')
       var value = split.join('=').replace(/\+/g, ' ')
       form.append(decodeURIComponent(name), decodeURIComponent(value))
     }
@@ -88,7 +88,7 @@ function decode(body) {
 function Body() {
   this.bodyUsed = false
 
-  this._initBody = function (body) {
+  this._initBody = function (body: BodyInit) {
     this._bodyInit = body
     if (!body) {
       this._bodyText = ''
@@ -122,7 +122,7 @@ function Body() {
   }
 
   if (support.blob) {
-    this.blob = function () {
+    this.blob = function (): Promise<Blob> {
       var rejected = consumed(this)
       if (rejected) {
         return rejected
@@ -139,7 +139,7 @@ function Body() {
       }
     }
 
-    this.arrayBuffer = function () {
+    this.arrayBuffer = function (): Promise<ArrayBuffer> {
       if (this._bodyArrayBuffer) {
         return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
       } else {
@@ -148,7 +148,7 @@ function Body() {
     }
   }
 
-  this.text = function () {
+  this.text = function (): Promise<string> {
     var rejected = consumed(this)
     if (rejected) {
       return rejected
@@ -166,12 +166,12 @@ function Body() {
   }
 
   if (support.formData) {
-    this.formData = function () {
+    this.formData = function (): Promise<FormData> {
       return this.text().then(decode)
     }
   }
 
-  this.json = function () {
+  this.json = function (): Promise<any> {
     return this.text().then(JSON.parse)
   }
 
