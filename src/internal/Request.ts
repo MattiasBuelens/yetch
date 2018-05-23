@@ -13,6 +13,14 @@ function normalizeMethod(method: string): string {
 
 class Request extends Body {
 
+  credentials: RequestCredentials
+  headers: Headers
+  method: string
+  mode: RequestMode
+  referrer: string | null
+  signal: AbortSignal | null
+  url: string
+
   constructor(input?: Request | string, options?: RequestInit) {
     super();
     options = options || {}

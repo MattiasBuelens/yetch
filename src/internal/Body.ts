@@ -91,7 +91,7 @@ abstract class Body {
   bodyUsed: boolean = false
   abstract headers: Headers
 
-  private _bodyInit: BodyInit
+  protected _bodyInit: BodyInit
   private _bodyText?: string
   private _bodyBlob?: Blob
   private _bodyFormData?: FormData
