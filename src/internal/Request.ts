@@ -11,10 +11,8 @@ export interface RequestInit {
   signal?: AbortSignal
 }
 
-type NormalizedMethod = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT'
-
 // HTTP methods whose capitalization should be normalized
-var methods: NormalizedMethod[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+var methods: string[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
 
 function normalizeMethod(method: string): string {
   var upcased = method.toUpperCase()
