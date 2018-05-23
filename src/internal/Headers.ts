@@ -17,6 +17,10 @@ function normalizeValue(value: any): string {
   return value
 }
 
+function isIterable<T>(obj: any): obj is Iterable<T> {
+  return support.iterable && obj && obj[Symbol.iterator];
+}
+
 // Build a destructive iterator for the value list
 function iteratorFor<T>(items: T[]): IterableIterator<T> {
   const iterator = {
@@ -33,9 +37,9 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
   return iterator
 }
 
-export type HeadersInit = Headers | Array<[string, string]> | { [name: string]: string }
+export type HeadersInit = Headers | Iterable<[string, string]> | { [name: string]: string }
 
-class Headers {
+class Headers implements Iterable<[string, string]> {
 
   private map: { [name: string]: string }
 
@@ -48,6 +52,10 @@ class Headers {
       })
     } else if (Array.isArray(headers)) {
       headers.forEach((header) => {
+        this.append(header[0], header[1])
+      })
+    } else if (isIterable(headers)) {
+      Array.from(headers).forEach((header) => {
         this.append(header[0], header[1])
       })
     } else if (headers) {
