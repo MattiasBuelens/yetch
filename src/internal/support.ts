@@ -1,6 +1,6 @@
-var root = require('./root').root
+import { root } from './root'
 
-exports.support = {
+export const support = {
   searchParams: 'URLSearchParams' in root,
   iterable: 'Symbol' in root && 'iterator' in Symbol,
   blob: 'FileReader' in root && 'Blob' in root && (function() {

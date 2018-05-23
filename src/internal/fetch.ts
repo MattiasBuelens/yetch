@@ -1,8 +1,8 @@
-var support = require('./support').support
-var DOMException = require('./DOMException').DOMException
-var Headers = require('./Headers').Headers
-var Request = require('./Request').Request
-var Response = require('./Response').Response
+import { support } from './support'
+import { DOMException } from './DOMException'
+import { Headers } from './Headers'
+import { Request } from './Request'
+import { Response } from './Response'
 
 function parseHeaders(rawHeaders) {
   var headers = new Headers()
@@ -89,4 +89,4 @@ function fetch(input, init) {
 }
 
 fetch.polyfill = true
-exports.fetch = fetch
+export { fetch }

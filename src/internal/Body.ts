@@ -1,4 +1,4 @@
-var support = require('./support').support
+import { support } from './support'
 
 var viewClasses = [
   '[object Int8Array]',
@@ -178,4 +178,4 @@ function Body() {
   return this
 }
 
-exports.Body = Body
+export { Body }

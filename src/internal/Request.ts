@@ -1,5 +1,5 @@
-var Headers = require('./Headers').Headers
-var Body = require('./Body').Body
+import { Headers } from './Headers'
+import { Body } from './Body'
 
 // HTTP methods whose capitalization should be normalized
 var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
@@ -54,4 +54,4 @@ Request.prototype.clone = function () {
 
 Body.call(Request.prototype)
 
-exports.Request = Request
+export { Request }

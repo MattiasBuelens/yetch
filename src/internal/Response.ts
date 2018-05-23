@@ -1,5 +1,5 @@
-var Headers = require('./Headers').Headers
-var Body = require('./Body').Body
+import { Headers } from './Headers'
+import { Body } from './Body'
 
 function Response(bodyInit, options) {
   if (!options) {
@@ -42,4 +42,4 @@ Response.redirect = function (url, status) {
   return new Response(null, { status: status, headers: { location: url } })
 }
 
-exports.Response = Response
+export { Response }

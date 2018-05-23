@@ -1,4 +1,4 @@
-var root = require('./root').root
+import { root } from './root'
 
 var DOMException = root.DOMException
 try {
@@ -14,4 +14,4 @@ try {
   DOMException.prototype.constructor = DOMException
 }
 
-exports.DOMException = DOMException
+export { DOMException }

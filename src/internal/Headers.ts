@@ -1,4 +1,4 @@
-var support = require('./support').support
+import { support } from './support'
 
 function normalizeName(name) {
   if (typeof name !== 'string') {
@@ -107,4 +107,4 @@ if (support.iterable) {
   Headers.prototype[Symbol.iterator] = Headers.prototype.entries
 }
 
-exports.Headers = Headers
+export { Headers }
