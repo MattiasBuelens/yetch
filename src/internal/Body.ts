@@ -12,7 +12,7 @@ export type TypedArray
   | Float32Array
   | Float64Array
 
-export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | string | null;
+export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | URLSearchParams | string | null;
 
 var viewClasses = [
   '[object Int8Array]',
@@ -104,7 +104,7 @@ abstract class Body {
   bodyUsed: boolean = false
   abstract headers: Headers
 
-  protected _bodyInit: BodyInit
+  protected _bodyInit!: BodyInit
   private _bodyText?: string
   private _bodyBlob?: Blob
   private _bodyFormData?: FormData
@@ -117,17 +117,17 @@ abstract class Body {
     } else if (typeof body === 'string') {
       this._bodyText = body
     } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-      this._bodyBlob = body
+      this._bodyBlob = body as Blob
     } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-      this._bodyFormData = body
+      this._bodyFormData = body as FormData
     } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-      this._bodyText = body.toString()
+      this._bodyText = (body as URLSearchParams).toString()
     } else if (support.arrayBuffer && support.blob && isDataView(body)) {
       this._bodyArrayBuffer = bufferClone(body.buffer)
       // IE 10-11 can't handle a DataView body.
       this._bodyInit = new Blob([this._bodyArrayBuffer])
     } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
-      this._bodyArrayBuffer = bufferClone(body)
+      this._bodyArrayBuffer = bufferClone(body as (ArrayBuffer | ArrayBufferView))
     } else {
       throw new Error('unsupported BodyInit type')
     }
