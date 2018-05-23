@@ -157,37 +157,37 @@ abstract class Body {
 
 }
 
-  if (support.blob) {
-    Body.prototype.blob = function (): Promise<Blob> {
-      var rejected = consumed(this)
-      if (rejected) {
-        return rejected
-      }
-
-      if (this._bodyBlob) {
-        return Promise.resolve(this._bodyBlob)
-      } else if (this._bodyArrayBuffer) {
-        return Promise.resolve(new Blob([this._bodyArrayBuffer]))
-      } else if (this._bodyFormData) {
-        throw new Error('could not read FormData body as blob')
-      } else {
-        return Promise.resolve(new Blob([this._bodyText]))
-      }
+if (support.blob) {
+  Body.prototype.blob = function (): Promise<Blob> {
+    var rejected = consumed(this)
+    if (rejected) {
+      return rejected
     }
 
-    Body.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
-      if (this._bodyArrayBuffer) {
-        return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
-      } else {
-        return this.blob().then(readBlobAsArrayBuffer)
-      }
+    if (this._bodyBlob) {
+      return Promise.resolve(this._bodyBlob)
+    } else if (this._bodyArrayBuffer) {
+      return Promise.resolve(new Blob([this._bodyArrayBuffer]))
+    } else if (this._bodyFormData) {
+      throw new Error('could not read FormData body as blob')
+    } else {
+      return Promise.resolve(new Blob([this._bodyText]))
     }
   }
 
-  if (support.formData) {
-    Body.prototype.formData = function (): Promise<FormData> {
-      return this.text().then(decode)
+  Body.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
+    if (this._bodyArrayBuffer) {
+      return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+    } else {
+      return this.blob().then(readBlobAsArrayBuffer)
     }
   }
+}
+
+if (support.formData) {
+  Body.prototype.formData = function (): Promise<FormData> {
+    return this.text().then(decode)
+  }
+}
 
 export { Body }
