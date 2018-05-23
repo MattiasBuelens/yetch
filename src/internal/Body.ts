@@ -124,11 +124,30 @@ class Body {
     }
   }
 
+  text(): Promise<string> {
+    var rejected = consumed(this)
+    if (rejected) {
+      return rejected
+    }
+
+    if (this._bodyBlob) {
+      return readBlobAsText(this._bodyBlob)
+    } else if (this._bodyArrayBuffer) {
+      return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
+    } else if (this._bodyFormData) {
+      throw new Error('could not read FormData body as text')
+    } else {
+      return Promise.resolve(this._bodyText)
+    }
+  }
+
+  json(): Promise<any> {
+    return this.text().then(JSON.parse)
+  }
+
   blob?: () => Promise<Blob>
   arrayBuffer?: () => Promise<ArrayBuffer>
-  text: () => Promise<string>
   formData?: () => Promise<FormData>
-  json: () => Promise<any>
 
 }
 
@@ -159,31 +178,10 @@ class Body {
     }
   }
 
-  Body.prototype.text = function (): Promise<string> {
-    var rejected = consumed(this)
-    if (rejected) {
-      return rejected
-    }
-
-    if (this._bodyBlob) {
-      return readBlobAsText(this._bodyBlob)
-    } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
-    } else if (this._bodyFormData) {
-      throw new Error('could not read FormData body as text')
-    } else {
-      return Promise.resolve(this._bodyText)
-    }
-  }
-
   if (support.formData) {
     Body.prototype.formData = function (): Promise<FormData> {
       return this.text().then(decode)
     }
-  }
-
-  Body.prototype.json = function (): Promise<any> {
-    return this.text().then(JSON.parse)
   }
 
 export { Body }
