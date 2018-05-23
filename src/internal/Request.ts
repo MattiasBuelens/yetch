@@ -1,5 +1,15 @@
-import { Headers } from './Headers'
-import { Body } from './Body'
+import { Headers, HeadersInit } from './Headers'
+import { Body, BodyInit } from './Body'
+
+export interface RequestInit {
+  body?: BodyInit
+  credentials?: RequestCredentials
+  headers?: HeadersInit
+  method?: string
+  mode?: RequestMode
+  referrer?: string
+  signal?: AbortSignal
+}
 
 type NormalizedMethod = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT'
 

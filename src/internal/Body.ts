@@ -1,6 +1,19 @@
 import { support } from './support'
 import { Headers } from './Headers'
 
+export type TypedArray
+  = Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array
+
+export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | string | null;
+
 var viewClasses = [
   '[object Int8Array]',
   '[object Uint8Array]',

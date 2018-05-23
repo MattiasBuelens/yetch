@@ -1,7 +1,14 @@
-import { Headers } from './Headers'
+import { Headers, HeadersInit } from './Headers'
 import { Body } from './Body'
 
 var redirectStatuses = [301, 302, 303, 307, 308]
+
+export interface ResponseInit {
+  headers?: HeadersInit
+  status?: number
+  statusText?: string
+  url?: string
+}
 
 class Response extends Body {
 

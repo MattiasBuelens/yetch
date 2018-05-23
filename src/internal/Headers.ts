@@ -35,13 +35,13 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
   return iterator
 }
 
-type HeadersInit = Headers | Array<[string, string]> | { [name: string]: string }
+export type HeadersInit = Headers | Array<[string, string]> | { [name: string]: string }
 
 class Headers {
 
   private map: { [name: string]: string }
 
-  constructor(headers: HeadersInit) {
+  constructor(headers?: HeadersInit) {
     this.map = {}
 
     if (headers instanceof Headers) {
