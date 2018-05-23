@@ -93,11 +93,27 @@ function readArrayBufferAsText(buf: ArrayBuffer): string {
 }
 
 function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
+  if (isArrayBuffer(buf)) {
+    return arrayBufferClone(buf)
+  } else {
+    return arrayBufferViewClone(buf)
+  }
+}
+
+function arrayBufferClone(buf: ArrayBuffer): ArrayBuffer {
   if (buf.slice) {
     return buf.slice(0)
   } else {
+    return arrayBufferViewClone(new Uint8Array(buf))
+  }
+}
+
+function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
+  if ((buf as TypedArray).slice) {
+    return (buf as TypedArray).slice(0).buffer
+  } else {
     const view = new Uint8Array(buf.byteLength)
-    view.set(new Uint8Array(buf))
+    view.set(new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
     return view.buffer
   }
 }
