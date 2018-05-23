@@ -1,15 +1,17 @@
 import { Headers } from './Headers'
 import { Body } from './Body'
 
-// HTTP methods whose capitalization should be normalized
-var methods = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+type NormalizedMethod = 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT'
 
-function normalizeMethod(method) {
+// HTTP methods whose capitalization should be normalized
+var methods: NormalizedMethod[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
+
+function normalizeMethod(method: string): string {
   var upcased = method.toUpperCase()
   return (methods.indexOf(upcased) > -1) ? upcased : method
 }
 
-function Request(input, options) {
+function Request(input?: Request | string, options?: RequestInit) {
   options = options || {}
   var body = options.body
 
