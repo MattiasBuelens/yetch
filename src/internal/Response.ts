@@ -5,7 +5,14 @@ var redirectStatuses = [301, 302, 303, 307, 308]
 
 class Response extends Body {
 
-  constructor(bodyInit, options) {
+  headers: Headers;
+  ok: boolean;
+  status: number;
+  statusText: string;
+  type: ResponseType;
+  url: string;
+
+  constructor(bodyInit?: BodyInit, options?: ResponseInit) {
     super()
     if (!options) {
       options = {}
@@ -20,7 +27,7 @@ class Response extends Body {
     this._initBody(bodyInit)
   }
 
-  clone() {
+  clone(): Response {
     return new Response(this._bodyInit, {
       status: this.status,
       statusText: this.statusText,
@@ -29,13 +36,13 @@ class Response extends Body {
     })
   }
 
-  static error() {
+  static error(): Response {
     var response = new Response(null, { status: 0, statusText: '' })
     response.type = 'error'
     return response
   }
 
-  static redirect(url, status) {
+  static redirect(url: string, status: number): Response {
     if (redirectStatuses.indexOf(status) === -1) {
       throw new RangeError('Invalid status code')
     }
