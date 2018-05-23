@@ -81,7 +81,7 @@ class Headers {
     this.map[normalizeName(name)] = normalizeValue(value)
   }
 
-  forEach(callback: (value: string, key: string, headers: Headers) => any,
+  forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any,
            thisArg?: any): void {
     for (var name in this.map) {
       if (this.map.hasOwnProperty(name)) {
@@ -91,22 +91,24 @@ class Headers {
   }
 
   keys(): IterableIterator<string> {
-    var items = []
+    var items: string[] = []
     this.forEach(function (value, name) { items.push(name) })
     return iteratorFor(items)
   }
 
   values(): IterableIterator<string> {
-    var items = []
+    var items: string[] = []
     this.forEach(function (value) { items.push(value) })
     return iteratorFor(items)
   }
 
   entries(): IterableIterator<[string, string]> {
-    var items = []
+    var items: Array<[string, string]> = []
     this.forEach(function (value, name) { items.push([name, value]) })
     return iteratorFor(items)
   }
+
+  [Symbol.iterator]: () => Iterator<[string, string]>
 
 }
 
