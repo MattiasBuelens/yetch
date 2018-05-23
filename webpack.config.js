@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: ['./src/index.ts', './polyfill.js'],
+  entry: ['./src/index.ts', './src/polyfill.ts'],
   output: {
     filename: 'yetch-polyfill.js',
     path: path.resolve(__dirname, 'dist'),
