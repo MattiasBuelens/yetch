@@ -7,7 +7,7 @@ export interface ResponseInit {
   headers?: HeadersInit
   status?: number
   statusText?: string
-  url?: string
+  url?: string | null
 }
 
 class Response extends Body {
