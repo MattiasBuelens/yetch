@@ -1,6 +1,14 @@
 import { root } from './root'
 
-var DOMException = root.DOMException
+interface DOMException extends Error {
+}
+
+interface DOMExceptionConstructor {
+  new(message?: string, name?: string): DOMException
+  readonly prototype: DOMException
+}
+
+var DOMException: DOMExceptionConstructor = root.DOMException!
 try {
   new DOMException()
 } catch (err) {
