@@ -35,6 +35,8 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
   return iterator
 }
 
+type HeadersInit = Headers | Array<[string, string]> | { [name: string]: string }
+
 class Headers {
 
   private map: { [name: string]: string }

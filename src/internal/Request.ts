@@ -22,7 +22,7 @@ class Request extends Body {
   url: string
 
   constructor(input?: Request | string, options?: RequestInit) {
-    super();
+    super()
     options = options || {}
     var body = options.body
 
