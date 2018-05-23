@@ -57,31 +57,31 @@ class Headers {
     }
   }
 
-  append (name: string, value: string): void {
+  append(name: string, value: string): void {
     name = normalizeName(name)
     value = normalizeValue(value)
     var oldValue = this.map[name]
     this.map[name] = oldValue ? oldValue + ',' + value : value
   }
 
-  delete (name: string): void {
+  delete(name: string): void {
     delete this.map[normalizeName(name)]
   }
 
-  get (name: string) {
+  get(name: string) {
     name = normalizeName(name)
     return this.has(name) ? this.map[name] : null
   }
 
-  has (name: string): boolean {
+  has(name: string): boolean {
     return this.map.hasOwnProperty(normalizeName(name))
   }
 
-  set (name: string, value: string): void {
+  set(name: string, value: string): void {
     this.map[normalizeName(name)] = normalizeValue(value)
   }
 
-  forEach (callback: (value: string, key: string, headers: Headers) => any,
+  forEach(callback: (value: string, key: string, headers: Headers) => any,
            thisArg?: any): void {
     for (var name in this.map) {
       if (this.map.hasOwnProperty(name)) {
@@ -90,19 +90,19 @@ class Headers {
     }
   }
 
-  keys (): IterableIterator<string> {
+  keys(): IterableIterator<string> {
     var items = []
     this.forEach(function (value, name) { items.push(name) })
     return iteratorFor(items)
   }
 
-  values (): IterableIterator<string> {
+  values(): IterableIterator<string> {
     var items = []
     this.forEach(function (value) { items.push(value) })
     return iteratorFor(items)
   }
 
-  entries (): IterableIterator<[string, string]> {
+  entries(): IterableIterator<[string, string]> {
     var items = []
     this.forEach(function (value, name) { items.push([name, value]) })
     return iteratorFor(items)
