@@ -85,10 +85,13 @@ function decode(body: string): FormData {
   return form
 }
 
-function Body() {
-  this.bodyUsed = false
+class Body {
 
-  this._initBody = function (body: BodyInit) {
+  constructor() {
+    this.bodyUsed = false
+  }
+
+  _initBody(body: BodyInit) {
     this._bodyInit = body
     if (!body) {
       this._bodyText = ''
@@ -121,8 +124,16 @@ function Body() {
     }
   }
 
+  blob?: () => Promise<Blob>
+  arrayBuffer?: () => Promise<ArrayBuffer>
+  text: () => Promise<string>
+  formData?: () => Promise<FormData>
+  json: () => Promise<any>
+
+}
+
   if (support.blob) {
-    this.blob = function (): Promise<Blob> {
+    Body.prototype.blob = function (): Promise<Blob> {
       var rejected = consumed(this)
       if (rejected) {
         return rejected
@@ -139,7 +150,7 @@ function Body() {
       }
     }
 
-    this.arrayBuffer = function (): Promise<ArrayBuffer> {
+    Body.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
       if (this._bodyArrayBuffer) {
         return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
       } else {
@@ -148,7 +159,7 @@ function Body() {
     }
   }
 
-  this.text = function (): Promise<string> {
+  Body.prototype.text = function (): Promise<string> {
     var rejected = consumed(this)
     if (rejected) {
       return rejected
@@ -166,16 +177,13 @@ function Body() {
   }
 
   if (support.formData) {
-    this.formData = function (): Promise<FormData> {
+    Body.prototype.formData = function (): Promise<FormData> {
       return this.text().then(decode)
     }
   }
 
-  this.json = function (): Promise<any> {
+  Body.prototype.json = function (): Promise<any> {
     return this.text().then(JSON.parse)
   }
-
-  return this
-}
 
 export { Body }
