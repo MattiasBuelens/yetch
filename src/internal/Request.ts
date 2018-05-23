@@ -32,35 +32,45 @@ class Request extends Body {
   constructor(input?: Request | string, options?: RequestInit) {
     super()
     options = options || {}
-    let body = options.body || null
+    let body: BodyInit = options.body || null
+    let credentials: RequestCredentials | undefined
+    let headers: Headers | undefined
+    let method: string
+    let mode: RequestMode
+    let signal: AbortSignal | null
 
     if (input instanceof Request) {
       if (input.bodyUsed) {
         throw new TypeError('Already read')
       }
       this.url = input.url
-      this.credentials = input.credentials
+      credentials = input.credentials
       if (!options.headers) {
-        this.headers = new Headers(input.headers)
+        headers = new Headers(input.headers)
       }
-      this.method = input.method
-      this.mode = input.mode
-      this.signal = input.signal
+      method = input.method
+      mode = input.mode
+      signal = input.signal
       if (!body && input._bodyInit != null) {
         body = input._bodyInit
         input.bodyUsed = true
       }
     } else {
       this.url = String(input)
+      credentials = 'omit'
+      method = 'GET'
+      mode = 'cors'
+      signal = null
     }
 
-    this.credentials = options.credentials || this.credentials || 'omit'
-    if (options.headers || !this.headers) {
-      this.headers = new Headers(options.headers)
+    this.credentials = options.credentials || credentials
+    if (options.headers || !headers) {
+      headers = new Headers(options.headers)
     }
-    this.method = normalizeMethod(options.method || this.method || 'GET')
-    this.mode = options.mode || this.mode || null
-    this.signal = options.signal || this.signal
+    this.headers = headers
+    this.method = normalizeMethod(options.method || method)
+    this.mode = options.mode || mode
+    this.signal = options.signal || signal
     this.referrer = null
 
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {
