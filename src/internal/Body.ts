@@ -1,4 +1,5 @@
 import { support } from './support'
+import { Headers } from './Headers';
 
 var viewClasses = [
   '[object Int8Array]',
@@ -85,11 +86,16 @@ function decode(body: string): FormData {
   return form
 }
 
-class Body {
+abstract class Body {
 
-  constructor() {
-    this.bodyUsed = false
-  }
+  bodyUsed: boolean = false;
+  abstract headers: Headers;
+
+  private _bodyInit: BodyInit;
+  private _bodyText?: string;
+  private _bodyBlob?: Blob;
+  private _bodyFormData?: FormData;
+  private _bodyArrayBuffer?: ArrayBuffer;
 
   _initBody(body: BodyInit) {
     this._bodyInit = body
@@ -137,7 +143,7 @@ class Body {
     } else if (this._bodyFormData) {
       throw new Error('could not read FormData body as text')
     } else {
-      return Promise.resolve(this._bodyText)
+      return Promise.resolve(this._bodyText!)
     }
   }
 
