@@ -39,74 +39,74 @@ class Headers {
 
   private map: { [name: string]: string }
 
-constructor(headers: HeadersInit) {
-  this.map = {}
+  constructor(headers: HeadersInit) {
+    this.map = {}
 
-  if (headers instanceof Headers) {
-    headers.forEach(function (value, name) {
-      this.append(name, value)
-    }, this)
-  } else if (Array.isArray(headers)) {
-    headers.forEach(function (header) {
-      this.append(header[0], header[1])
-    }, this)
-  } else if (headers) {
-    Object.getOwnPropertyNames(headers).forEach(function (name) {
-      this.append(name, headers[name])
-    }, this)
-  }
-}
-
-append (name: string, value: string): void {
-  name = normalizeName(name)
-  value = normalizeValue(value)
-  var oldValue = this.map[name]
-  this.map[name] = oldValue ? oldValue + ',' + value : value
-}
-
-delete (name: string): void {
-  delete this.map[normalizeName(name)]
-}
-
-get (name: string) {
-  name = normalizeName(name)
-  return this.has(name) ? this.map[name] : null
-}
-
-has (name: string): boolean {
-  return this.map.hasOwnProperty(normalizeName(name))
-}
-
-set (name: string, value: string): void {
-  this.map[normalizeName(name)] = normalizeValue(value)
-}
-
-forEach (callback: (value: string, key: string, headers: Headers) => any,
-         thisArg?: any): void {
-  for (var name in this.map) {
-    if (this.map.hasOwnProperty(name)) {
-      callback.call(thisArg, this.map[name], name, this)
+    if (headers instanceof Headers) {
+      headers.forEach(function (value, name) {
+        this.append(name, value)
+      }, this)
+    } else if (Array.isArray(headers)) {
+      headers.forEach(function (header) {
+        this.append(header[0], header[1])
+      }, this)
+    } else if (headers) {
+      Object.getOwnPropertyNames(headers).forEach(function (name) {
+        this.append(name, headers[name])
+      }, this)
     }
   }
-}
 
-keys (): IterableIterator<string> {
-  var items = []
-  this.forEach(function (value, name) { items.push(name) })
-  return iteratorFor(items)
-}
+  append (name: string, value: string): void {
+    name = normalizeName(name)
+    value = normalizeValue(value)
+    var oldValue = this.map[name]
+    this.map[name] = oldValue ? oldValue + ',' + value : value
+  }
 
-values (): IterableIterator<string> {
-  var items = []
-  this.forEach(function (value) { items.push(value) })
-  return iteratorFor(items)
-}
+  delete (name: string): void {
+    delete this.map[normalizeName(name)]
+  }
 
-entries (): IterableIterator<[string, string]> {
-  var items = []
-  this.forEach(function (value, name) { items.push([name, value]) })
-  return iteratorFor(items)
-}
+  get (name: string) {
+    name = normalizeName(name)
+    return this.has(name) ? this.map[name] : null
+  }
+
+  has (name: string): boolean {
+    return this.map.hasOwnProperty(normalizeName(name))
+  }
+
+  set (name: string, value: string): void {
+    this.map[normalizeName(name)] = normalizeValue(value)
+  }
+
+  forEach (callback: (value: string, key: string, headers: Headers) => any,
+           thisArg?: any): void {
+    for (var name in this.map) {
+      if (this.map.hasOwnProperty(name)) {
+        callback.call(thisArg, this.map[name], name, this)
+      }
+    }
+  }
+
+  keys (): IterableIterator<string> {
+    var items = []
+    this.forEach(function (value, name) { items.push(name) })
+    return iteratorFor(items)
+  }
+
+  values (): IterableIterator<string> {
+    var items = []
+    this.forEach(function (value) { items.push(value) })
+    return iteratorFor(items)
+  }
+
+  entries (): IterableIterator<[string, string]> {
+    var items = []
+    this.forEach(function (value, name) { items.push([name, value]) })
+    return iteratorFor(items)
+  }
 
 }
 
