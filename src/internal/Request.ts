@@ -11,7 +11,10 @@ function normalizeMethod(method: string): string {
   return (methods.indexOf(upcased) > -1) ? upcased : method
 }
 
-function Request(input?: Request | string, options?: RequestInit) {
+class Request extends Body {
+
+constructor(input?: Request | string, options?: RequestInit) {
+  super();
   options = options || {}
   var body = options.body
 
@@ -50,10 +53,10 @@ function Request(input?: Request | string, options?: RequestInit) {
   this._initBody(body)
 }
 
-Request.prototype.clone = function () {
+clone() {
   return new Request(this, { body: this._bodyInit })
 }
 
-Body.call(Request.prototype)
+}
 
 export { Request }
