@@ -30,11 +30,11 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
 
     const xhr = new XMLHttpRequest()
 
-    function abortXhr() {
+    const abortXhr = () => {
       xhr.abort()
     }
 
-    xhr.onload = function () {
+    xhr.onload = () => {
       const headers = parseHeaders(xhr.getAllResponseHeaders() || '')
       const options: ResponseInit = {
         status: xhr.status,
@@ -46,15 +46,15 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
       resolve(new Response(body, options))
     }
 
-    xhr.onerror = function () {
+    xhr.onerror = () => {
       reject(new TypeError('Network request failed'))
     }
 
-    xhr.ontimeout = function () {
+    xhr.ontimeout = () => {
       reject(new TypeError('Network request failed'))
     }
 
-    xhr.onabort = function () {
+    xhr.onabort = () => {
       reject(new DOMException('Aborted', 'AbortError'))
     }
 
@@ -70,14 +70,14 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
       xhr.responseType = 'blob'
     }
 
-    request.headers.forEach(function (value, name) {
+    request.headers.forEach((value, name) => {
       xhr.setRequestHeader(name, value)
     })
 
     if (request.signal) {
       request.signal.addEventListener('abort', abortXhr)
 
-      xhr.onreadystatechange = function () {
+      xhr.onreadystatechange = () => {
         // DONE (success or failure)
         if (xhr.readyState === 4) {
           request.signal!.removeEventListener('abort', abortXhr)

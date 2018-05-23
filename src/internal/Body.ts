@@ -59,10 +59,10 @@ function consumed(body: Body): Promise<never> | undefined {
 
 function fileReaderReady<T>(reader: FileReader): Promise<T> {
   return new Promise(function (resolve, reject) {
-    reader.onload = function () {
+    reader.onload = () => {
       resolve(reader.result)
     }
-    reader.onerror = function () {
+    reader.onerror = () => {
       reject(reader.error)
     }
   })

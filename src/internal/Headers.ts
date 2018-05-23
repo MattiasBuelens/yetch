@@ -20,16 +20,14 @@ function normalizeValue(value: any): string {
 // Build a destructive iterator for the value list
 function iteratorFor<T>(items: T[]): IterableIterator<T> {
   const iterator = {
-    next: function () {
+    next() {
       const value = items.shift()
       return { done: value === undefined, value: value }
     }
   } as IterableIterator<T>
 
   if (support.iterable) {
-    iterator[Symbol.iterator] = function () {
-      return iterator
-    }
+    iterator[Symbol.iterator] = () => iterator
   }
 
   return iterator
