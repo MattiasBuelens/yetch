@@ -15,6 +15,7 @@
     ],
     "strict": true,
     "esModuleInterop": true,
-    "importHelpers": true
+    "importHelpers": true,
+    "stripInternal": true
   }
 }

@@ -136,12 +136,18 @@ abstract class Body {
   bodyUsed: boolean = false
   abstract headers: Headers
 
+  /** @internal */
   _bodyInit!: BodyInit
+  /** @internal */
   _bodyText?: string
+  /** @internal */
   _bodyBlob?: Blob
+  /** @internal */
   _bodyFormData?: FormData
+  /** @internal */
   _bodyArrayBuffer?: ArrayBuffer
 
+  /** @internal */
   _initBody(body: BodyInit) {
     this._bodyInit = body
     if (!body) {
