@@ -1,7 +1,7 @@
 import { root } from './internal/root'
 import { AbortController, AbortSignal, fetch, Headers, Request, Response } from './index'
 
-export { AbortController, AbortSignal, fetch, Headers, Request, Response }
+export * from './index'
 
 function nativeFetchSupportsAbort() {
   return !!root.AbortController && !!root.Request && 'signal' in root.Request.prototype
