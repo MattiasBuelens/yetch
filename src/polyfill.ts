@@ -1,13 +1,10 @@
 import { root } from './internal/root'
 import { AbortController, AbortSignal, fetch, Headers, Request, Response } from './index'
+import { nativeFetchSupported } from './internal/native'
 
 export * from './index'
 
-function nativeFetchSupportsAbort() {
-  return !!root.AbortController && !!root.Request && 'signal' in root.Request.prototype
-}
-
-if (!root.fetch || !nativeFetchSupportsAbort()) {
+if (!nativeFetchSupported()) {
   root.fetch = fetch as any
   root.Headers = Headers as any
   root.Request = Request as any
