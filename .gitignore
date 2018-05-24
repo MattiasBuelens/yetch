@@ -13,5 +13,6 @@ node_modules/
 .env
 sauce_connect/
 sauce_connect.log
+.rpt2_cache/
 cjs/
 dist/
