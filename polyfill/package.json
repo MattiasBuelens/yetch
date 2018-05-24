@@ -1,0 +1,5 @@
+{
+  "name": "yetch-polyfill",
+  "main": "../cjs/polyfill.js",
+  "browser": "../dist/yetch-polyfill.js"
+}

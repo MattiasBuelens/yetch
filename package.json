@@ -2,7 +2,8 @@
   "name": "yetch",
   "description": "Yet-another-fetch polyfill. window.fetch that supports aborting via AbortController",
   "version": "1.0.0",
-  "main": "dist/yetch.js",
+  "main": "cjs/index.js",
+  "browser": "dist/yetch.js",
   "repository": "https://github.com/Netflix/yetch",
   "license": "MIT",
   "dependencies": {
@@ -24,12 +25,14 @@
   },
   "files": [
     "LICENSE",
-    "polyfill.js",
-    "src",
+    "polyfill",
+    "cjs",
     "dist"
   ],
   "scripts": {
-    "build": "webpack",
+    "build": "npm run build:cjs && npm run build:bundle",
+    "build:bundle": "webpack",
+    "build:cjs": "tsc -p ./src",
     "test": "make"
   }
 }

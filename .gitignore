@@ -3,4 +3,5 @@ package-lock.json
 node_modules/
 sauce_connect/
 sauce_connect.log
+cjs/
 dist/
