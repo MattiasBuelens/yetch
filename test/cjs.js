@@ -19,7 +19,7 @@ describe('Common JS', function () {
   });
 
   it('should polyfill if you import yetch/polyfill', function () {
-    var rootModule = require('../src/internal/root')
+    var rootModule = require('../cjs/internal/root')
     var originalRoot = rootModule.root
     var root = rootModule.root = {}
     require('../polyfill')
