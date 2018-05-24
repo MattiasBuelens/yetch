@@ -3,8 +3,7 @@ const commonjs = require('rollup-plugin-commonjs')
 const typescript = require('rollup-plugin-typescript2')
 const { uglify } = require('rollup-plugin-uglify')
 
-const config = {
-  plugins: [
+const plugins = [
     nodeResolve(),
     commonjs({
       include: 'node_modules/**'
@@ -18,24 +17,25 @@ const config = {
       }
     }),
     uglify()
-  ]
-}
+]
 
 module.exports = [
-  Object.assign({}, config, {
+  {
     input: 'src/index.ts',
     output: {
       file: 'dist/yetch.js',
       format: 'umd',
       name: 'Yetch'
-    }
-  }),
-  Object.assign({}, config, {
+    },
+    plugins
+  },
+  {
     input: 'src/polyfill.ts',
     output: {
       file: 'dist/yetch-polyfill.js',
       format: 'umd',
       name: 'Yetch'
-    }
-  })
+    },
+    plugins
+  }
 ]
