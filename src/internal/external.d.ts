@@ -1,4 +1,4 @@
-declare module 'abortcontroller-polyfill/dist/cjs-ponyfill' {
+declare module 'abortcontroller-polyfill/dist/abortcontroller' {
   const AbortControllerPolyfill: typeof AbortController
   const AbortSignalPolyfill: typeof AbortSignal
 
