@@ -15,27 +15,54 @@ const plugins = [
         module: 'es2015'
       }
     }
-  }),
-  uglify()
+  })
 ]
 
 module.exports = [
   {
     input: 'src/index.ts',
-    output: {
+    output: [{
       file: 'dist/yetch.js',
+      format: 'cjs'
+    }, {
+      file: 'dist/yetch.mjs',
+      format: 'es'
+    }],
+    plugins
+  },
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/yetch.umd.js',
       format: 'umd',
       name: 'Yetch'
     },
+    plugins: [
+      ...plugins,
+      uglify()
+    ]
+  },
+  {
+    input: 'src/polyfill.ts',
+    output: [{
+      file: 'dist/yetch-polyfill.js',
+      format: 'cjs'
+    }, {
+      file: 'dist/yetch-polyfill.mjs',
+      format: 'es'
+    }],
     plugins
   },
   {
     input: 'src/polyfill.ts',
     output: {
-      file: 'dist/yetch-polyfill.js',
+      file: 'dist/yetch-polyfill.umd.js',
       format: 'umd',
       name: 'Yetch'
     },
-    plugins
+    plugins: [
+      ...plugins,
+      uglify()
+    ]
   }
 ]
