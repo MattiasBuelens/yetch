@@ -20,7 +20,7 @@ function parseHeaders(rawHeaders: string): Headers {
   return headers
 }
 
-function fetch(input?: Request | string, init?: RequestInit): Promise<Response> {
+export function xhrFetch(input?: Request | string, init?: RequestInit): Promise<Response> {
   return new Promise<Response>(function(resolve, reject) {
     const request = new Request(input, init)
 
@@ -81,6 +81,3 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
     xhr.send(request._bodyInit === undefined ? null : request._bodyInit)
   })
 }
-
-(fetch as any).polyfill = true
-export { fetch }
