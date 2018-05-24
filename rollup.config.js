@@ -4,19 +4,19 @@ const typescript = require('rollup-plugin-typescript2')
 const { uglify } = require('rollup-plugin-uglify')
 
 const plugins = [
-    nodeResolve(),
-    commonjs({
-      include: 'node_modules/**'
-    }),
-    typescript({
-      tsconfig: 'src/tsconfig.json',
-      tsconfigOverride: {
-        compilerOptions: {
-          module: 'es2015'
-        }
+  nodeResolve(),
+  commonjs({
+    include: 'node_modules/**'
+  }),
+  typescript({
+    tsconfig: 'src/tsconfig.json',
+    tsconfigOverride: {
+      compilerOptions: {
+        module: 'es2015'
       }
-    }),
-    uglify()
+    }
+  }),
+  uglify()
 ]
 
 module.exports = [
