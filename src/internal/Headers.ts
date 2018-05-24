@@ -69,7 +69,7 @@ class Headers implements Iterable<[string, string]> {
     name = normalizeName(name)
     value = normalizeValue(value)
     const oldValue = this.map[name]
-    this.map[name] = oldValue ? oldValue + ',' + value : value
+    this.map[name] = oldValue ? oldValue + ', ' + value : value
   }
 
   delete(name: string): void {
