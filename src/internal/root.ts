@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    fetch?: typeof fetch
+    fetch: typeof fetch
     Headers?: typeof Headers
     Request?: typeof Request
     Response?: typeof Response
