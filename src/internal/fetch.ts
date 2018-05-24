@@ -73,11 +73,8 @@ function fetch(input?: Request | string, init?: RequestInit): Promise<Response> 
     if (request.signal) {
       request.signal.addEventListener('abort', abortXhr)
 
-      xhr.onreadystatechange = () => {
-        // DONE (success or failure)
-        if (xhr.readyState === 4) {
-          request.signal!.removeEventListener('abort', abortXhr)
-        }
+      xhr.onloadend = () => {
+        request.signal!.removeEventListener('abort', abortXhr)
       }
     }
 
