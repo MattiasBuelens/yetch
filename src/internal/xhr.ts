@@ -70,11 +70,11 @@ export function xhrFetch(input: Request | string, init?: RequestInit): Promise<R
       xhr.setRequestHeader(name, value)
     })
 
-      request.signal.addEventListener('abort', abortXhr)
+    request.signal.addEventListener('abort', abortXhr)
 
-      xhr.onloadend = () => {
-        request.signal!.removeEventListener('abort', abortXhr)
-      }
+    xhr.onloadend = () => {
+      request.signal!.removeEventListener('abort', abortXhr)
+    }
 
     xhr.send(request._bodyInit === undefined ? null : request._bodyInit)
   })
