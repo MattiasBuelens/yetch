@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "cjs/index.js",
   "module": "dist/yetch.mjs",
-  "browser": "dist/yetch.umd.js",
+  "browser": "dist/yetch.js",
   "repository": "https://github.com/Netflix/yetch",
   "license": "MIT",
   "dependencies": {

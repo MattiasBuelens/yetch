@@ -22,7 +22,7 @@ module.exports = [
   {
     input: 'src/index.ts',
     output: [{
-      file: 'dist/yetch.js',
+      file: 'dist/yetch.cjs.js',
       format: 'cjs'
     }, {
       file: 'dist/yetch.mjs',
@@ -33,7 +33,7 @@ module.exports = [
   {
     input: 'src/index.ts',
     output: {
-      file: 'dist/yetch.umd.js',
+      file: 'dist/yetch.js',
       format: 'umd',
       name: 'Yetch'
     },
@@ -45,7 +45,7 @@ module.exports = [
   {
     input: 'src/polyfill.ts',
     output: [{
-      file: 'dist/yetch-polyfill.js',
+      file: 'dist/yetch-polyfill.cjs.js',
       format: 'cjs'
     }, {
       file: 'dist/yetch-polyfill.mjs',
@@ -56,7 +56,7 @@ module.exports = [
   {
     input: 'src/polyfill.ts',
     output: {
-      file: 'dist/yetch-polyfill.umd.js',
+      file: 'dist/yetch-polyfill.js',
       format: 'umd',
       name: 'Yetch'
     },
