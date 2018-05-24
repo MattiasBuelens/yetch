@@ -20,7 +20,7 @@ function parseHeaders(rawHeaders: string): Headers {
   return headers
 }
 
-export function xhrFetch(input?: Request | string, init?: RequestInit): Promise<Response> {
+export function xhrFetch(input: Request | string, init?: RequestInit): Promise<Response> {
   return new Promise<Response>(function(resolve, reject) {
     const request = new Request(input, init)
 

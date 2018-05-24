@@ -25,11 +25,11 @@ class Request extends Body {
   headers: Headers
   method: string
   mode: RequestMode
-  referrer: string | null
+  referrer: string
   signal: AbortSignal | null
   url: string
 
-  constructor(input?: Request | string, options?: RequestInit) {
+  constructor(input: Request | string, options?: RequestInit) {
     super()
     options = options || {}
     let body: BodyInit = options.body || null
@@ -71,7 +71,7 @@ class Request extends Body {
     this.method = normalizeMethod(options.method || method)
     this.mode = options.mode || mode
     this.signal = options.signal || signal
-    this.referrer = null
+    this.referrer = ''
 
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {
       throw new TypeError('Body not allowed for GET or HEAD requests')
