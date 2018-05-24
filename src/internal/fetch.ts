@@ -21,7 +21,7 @@ function parseHeaders(rawHeaders: string): Headers {
 }
 
 function fetch(input?: Request | string, init?: RequestInit): Promise<Response> {
-  return new Promise<Response>(function (resolve, reject) {
+  return new Promise<Response>(function(resolve, reject) {
     const request = new Request(input, init)
 
     if (request.signal && request.signal.aborted) {

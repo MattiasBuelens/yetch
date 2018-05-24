@@ -26,27 +26,27 @@ const viewClasses = [
   '[object Float64Array]'
 ]
 
-const isBlob = function (obj: any): obj is Blob {
+const isBlob = function(obj: any): obj is Blob {
   return obj && Blob.prototype.isPrototypeOf(obj)
 }
 
-const isFormData = function (obj: any): obj is FormData {
+const isFormData = function(obj: any): obj is FormData {
   return obj && FormData.prototype.isPrototypeOf(obj)
 }
 
-const isURLSearchParams = function (obj: any): obj is URLSearchParams {
+const isURLSearchParams = function(obj: any): obj is URLSearchParams {
   return obj && URLSearchParams.prototype.isPrototypeOf(obj)
 }
 
-const isArrayBuffer = function (obj: any): obj is ArrayBuffer {
+const isArrayBuffer = function(obj: any): obj is ArrayBuffer {
   return obj && ArrayBuffer.prototype.isPrototypeOf(obj)
 }
 
-const isDataView = function (obj: any): obj is DataView {
+const isDataView = function(obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
-const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function (obj) {
+const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function(obj) {
   return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
 }
 
@@ -58,7 +58,7 @@ function consumed(body: Body): Promise<never> | undefined {
 }
 
 function fileReaderReady<T>(reader: FileReader): Promise<T> {
-  return new Promise(function (resolve, reject) {
+  return new Promise(function(resolve, reject) {
     reader.onload = () => {
       resolve(reader.result)
     }
@@ -120,7 +120,7 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
 
 function decode(body: string): FormData {
   const form = new FormData()
-  body.trim().split('&').forEach(function (bytes) {
+  body.trim().split('&').forEach(function(bytes) {
     if (bytes) {
       const split = bytes.split('=')
       const name = split.shift()!.replace(/\+/g, ' ')
@@ -203,7 +203,7 @@ abstract class Body {
 }
 
 if (support.blob) {
-  Body.prototype.blob = function (): Promise<Blob> {
+  Body.prototype.blob = function(): Promise<Blob> {
     const rejected = consumed(this)
     if (rejected) {
       return rejected
@@ -220,7 +220,7 @@ if (support.blob) {
     }
   }
 
-  Body.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
+  Body.prototype.arrayBuffer = function(): Promise<ArrayBuffer> {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
     } else {
@@ -230,7 +230,7 @@ if (support.blob) {
 }
 
 if (support.formData) {
-  Body.prototype.formData = function (): Promise<FormData> {
+  Body.prototype.formData = function(): Promise<FormData> {
     return this.text().then(decode)
   }
 }

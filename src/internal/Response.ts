@@ -12,12 +12,12 @@ export interface ResponseInit {
 
 class Response extends Body {
 
-  headers: Headers;
-  ok: boolean;
-  status: number;
-  statusText: string;
-  type: ResponseType;
-  url: string;
+  headers: Headers
+  ok: boolean
+  status: number
+  statusText: string
+  type: ResponseType
+  url: string
 
   constructor(bodyInit?: BodyInit, options?: ResponseInit) {
     super()

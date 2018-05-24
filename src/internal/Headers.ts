@@ -18,7 +18,7 @@ function normalizeValue(value: any): string {
 }
 
 function isIterable<T>(obj: any): obj is Iterable<T> {
-  return support.iterable && obj && obj[Symbol.iterator];
+  return support.iterable && obj && obj[Symbol.iterator]
 }
 
 // Build a destructive iterator for the value list
@@ -90,7 +90,7 @@ class Headers implements Iterable<[string, string]> {
   }
 
   forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any,
-           thisArg?: any): void {
+          thisArg?: any): void {
     for (const name in this.map) {
       if (this.map.hasOwnProperty(name)) {
         callback.call(thisArg, this.map[name], name, this)
@@ -100,19 +100,25 @@ class Headers implements Iterable<[string, string]> {
 
   keys(): IterableIterator<string> {
     const items: string[] = []
-    this.forEach(function (value, name) { items.push(name) })
+    this.forEach(function(value, name) {
+      items.push(name)
+    })
     return iteratorFor(items)
   }
 
   values(): IterableIterator<string> {
     const items: string[] = []
-    this.forEach(function (value) { items.push(value) })
+    this.forEach(function(value) {
+      items.push(value)
+    })
     return iteratorFor(items)
   }
 
   entries(): IterableIterator<[string, string]> {
     const items: Array<[string, string]> = []
-    this.forEach(function (value, name) { items.push([name, value]) })
+    this.forEach(function(value, name) {
+      items.push([name, value])
+    })
     return iteratorFor(items)
   }
 

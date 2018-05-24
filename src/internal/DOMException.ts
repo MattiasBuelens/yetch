@@ -5,6 +5,7 @@ interface DOMException extends Error {
 
 interface DOMExceptionConstructor {
   new(message?: string, name?: string): DOMException
+
   prototype: DOMException
 }
 
