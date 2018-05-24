@@ -5,7 +5,6 @@
   "main": "cjs/index.js",
   "types": "cjs/index.d.ts",
   "module": "dist/yetch.mjs",
-  "browser": "dist/yetch.js",
   "repository": "https://github.com/Netflix/yetch",
   "license": "MIT",
   "dependencies": {

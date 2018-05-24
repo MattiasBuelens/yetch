@@ -2,6 +2,5 @@
   "name": "yetch-polyfill",
   "main": "../cjs/polyfill.js",
   "types": "../cjs/polyfill.d.ts",
-  "module": "../dist/yetch-polyfill.mjs",
-  "browser": "../dist/yetch-polyfill.js"
+  "module": "../dist/yetch-polyfill.mjs"
 }
