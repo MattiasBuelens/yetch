@@ -24,7 +24,7 @@ export function xhrFetch(input: Request | string, init?: RequestInit): Promise<R
   return new Promise<Response>(function(resolve, reject) {
     const request = new Request(input, init)
 
-    if (request.signal && request.signal.aborted) {
+    if (request.signal.aborted) {
       return reject(new DOMException('Aborted', 'AbortError'))
     }
 
@@ -70,13 +70,11 @@ export function xhrFetch(input: Request | string, init?: RequestInit): Promise<R
       xhr.setRequestHeader(name, value)
     })
 
-    if (request.signal) {
       request.signal.addEventListener('abort', abortXhr)
 
       xhr.onloadend = () => {
         request.signal!.removeEventListener('abort', abortXhr)
       }
-    }
 
     xhr.send(request._bodyInit === undefined ? null : request._bodyInit)
   })
