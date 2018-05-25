@@ -7,6 +7,7 @@ declare global {
     AbortController?: typeof AbortController
     AbortSignal?: typeof AbortSignal
     DOMException?: typeof DOMException
+    ReadableStream?: typeof ReadableStream
   }
 }
 

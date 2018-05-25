@@ -1,6 +1,7 @@
 import { support } from './support'
 import { Headers } from './Headers'
-import { TypedArray } from './util'
+import { concatUint8Array, TypedArray } from './util'
+import { ReadableStreamConstructor } from './stream'
 
 export type BodyInit
   = Blob
@@ -48,6 +49,10 @@ const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || funct
   return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
 }
 
+const isReadableStream = function(obj: any): obj is ReadableStream {
+  return obj && ReadableStream.prototype.isPrototypeOf(obj)
+}
+
 function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
     return Promise.reject(new TypeError('Already read'))
@@ -88,6 +93,47 @@ function readArrayBufferAsText(buf: ArrayBuffer): string {
     chars[i] = String.fromCharCode(view[i])
   }
   return chars.join('')
+}
+
+function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
+  const reader = readable.getReader()
+  const chunks: Uint8Array[] = []
+  const pump = ({ done, value }: IteratorResult<Uint8Array>): Promise<Array<Uint8Array>> => {
+    if (done) {
+      return Promise.resolve(chunks)
+    } else {
+      chunks.push(value)
+      return reader.read().then(pump)
+    }
+  }
+  return reader.read().then(pump)
+}
+
+function readStreamAsBlob(readable: ReadableStream): Promise<Blob> {
+  return readAllChunks(readable).then((chunks) => new Blob(chunks))
+}
+
+function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
+  return readAllChunks(readable).then((chunks) => concatUint8Array(chunks).buffer)
+}
+
+function readStreamAsText(readable: ReadableStream): Promise<string> {
+  return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
+}
+
+function createStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
+  return new (ReadableStream as ReadableStreamConstructor)({
+    pull(c) {
+      return fn()
+        .then(chunk => {
+          c.enqueue(new Uint8Array(chunk))
+          c.close()
+        })
+    }
+    // TODO cancel must abort ongoing fetch
+  }, {
+    highWaterMark: 0 // do not pull immediately
+  })
 }
 
 function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
@@ -144,6 +190,8 @@ abstract class Body {
   _bodyFormData?: FormData
   /** @internal */
   _bodyArrayBuffer?: ArrayBuffer
+  /** @internal */
+  _bodyReadableStream?: ReadableStream
 
   /** @internal */
   _initBody(body?: BodyInit) {
@@ -164,6 +212,10 @@ abstract class Body {
       this._bodyInit = new Blob([this._bodyArrayBuffer])
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
+    } else if (support.stream && isReadableStream(body)) {
+      // TODO transfer stream
+      // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
+      this._bodyReadableStream = body
     } else {
       throw new Error('unsupported BodyInit type')
     }
@@ -189,6 +241,8 @@ abstract class Body {
       return readBlobAsText(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
       return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
+    } else if (this._bodyReadableStream) {
+      return readStreamAsText(this._bodyReadableStream)
     } else if (this._bodyFormData) {
       throw new Error('could not read FormData body as text')
     } else {
@@ -204,6 +258,8 @@ abstract class Body {
   arrayBuffer?: () => Promise<ArrayBuffer>
   formData?: () => Promise<FormData>
 
+  readonly body?: ReadableStream | null
+
 }
 
 if (support.blob) {
@@ -217,6 +273,8 @@ if (support.blob) {
       return Promise.resolve(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
       return Promise.resolve(new Blob([this._bodyArrayBuffer]))
+    } else if (this._bodyReadableStream) {
+      return readStreamAsBlob(this._bodyReadableStream)
     } else if (this._bodyFormData) {
       throw new Error('could not read FormData body as blob')
     } else {
@@ -237,6 +295,19 @@ if (support.formData) {
   Body.prototype.formData = function(): Promise<FormData> {
     return this.text().then(decode)
   }
+}
+
+if (support.stream) {
+  Object.defineProperty(Body.prototype, 'body', {
+    get() {
+      if (this._bodyReadableStream) {
+        return this._bodyReadableStream
+      } else {
+        // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
+        return createStream(() => this.arrayBuffer!())
+      }
+    }
+  })
 }
 
 export { Body }

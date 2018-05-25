@@ -6,15 +6,21 @@ import { followAbortSignal } from './AbortController'
 
 const fetch = root.fetch!
 const Request = root.Request!
+const Response = root.Response!
 const AbortController = root.AbortController!
 const AbortSignal = root.AbortSignal!
+const ReadableStream = root.ReadableStream!
 
 export function nativeFetchSupported() {
-  return !!fetch && nativeFetchSupportsAbort()
+  return !!fetch && nativeFetchSupportsAbort() && nativeFetchSupportsStream()
 }
 
 function nativeFetchSupportsAbort() {
   return !!AbortController && !!Request && 'signal' in Request.prototype
+}
+
+function nativeFetchSupportsStream() {
+  return !!Response && 'body' in Response.prototype
 }
 
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
