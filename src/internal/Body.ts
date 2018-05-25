@@ -148,8 +148,8 @@ abstract class Body {
   _bodyArrayBuffer?: ArrayBuffer
 
   /** @internal */
-  _initBody(body: BodyInit) {
-    this._bodyInit = body
+  _initBody(body?: BodyInit) {
+    this._bodyInit = body || null
     if (!body) {
       this._bodyText = ''
     } else if (typeof body === 'string') {

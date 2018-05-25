@@ -1,5 +1,5 @@
 import { Headers, HeadersInit } from './Headers'
-import { Body } from './Body'
+import { Body, BodyInit } from './Body'
 
 const redirectStatuses = [301, 302, 303, 307, 308]
 

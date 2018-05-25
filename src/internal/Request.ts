@@ -1,5 +1,6 @@
 import { Headers, HeadersInit } from './Headers'
 import { Body, BodyInit } from './Body'
+import { AbortController, AbortSignal } from './AbortController'
 
 export interface RequestInit {
   body?: BodyInit
@@ -19,17 +20,21 @@ function normalizeMethod(method: string): string {
   return (methods.indexOf(upcased) > -1) ? upcased : method
 }
 
+function createDefaultAbortSignal(): AbortSignal {
+  return new AbortController().signal
+}
+
 class Request extends Body {
 
   credentials: RequestCredentials
   headers: Headers
   method: string
   mode: RequestMode
-  referrer: string | null
-  signal: AbortSignal | null
+  referrer: string
+  signal: AbortSignal
   url: string
 
-  constructor(input?: Request | string, options?: RequestInit) {
+  constructor(input: Request | string, options?: RequestInit) {
     super()
     options = options || {}
     let body: BodyInit = options.body || null
@@ -70,8 +75,8 @@ class Request extends Body {
     this.headers = headers
     this.method = normalizeMethod(options.method || method)
     this.mode = options.mode || mode
-    this.signal = options.signal || signal
-    this.referrer = null
+    this.signal = options.signal || signal || createDefaultAbortSignal()
+    this.referrer = ''
 
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {
       throw new TypeError('Body not allowed for GET or HEAD requests')
