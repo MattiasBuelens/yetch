@@ -12,7 +12,8 @@ const plugins = [
     tsconfig: 'src/tsconfig.json',
     tsconfigOverride: {
       compilerOptions: {
-        module: 'es2015'
+        module: 'es2015',
+        declaration: false
       }
     }
   })
