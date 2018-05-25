@@ -12,7 +12,15 @@ export type TypedArray
   | Float32Array
   | Float64Array
 
-export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | URLSearchParams | string | null;
+export type BodyInit
+  = Blob
+  | TypedArray
+  | DataView
+  | ArrayBuffer
+  | FormData
+  | URLSearchParams
+  | string
+  | null;
 
 const viewClasses = [
   '[object Int8Array]',
