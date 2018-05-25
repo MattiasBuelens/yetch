@@ -26,10 +26,13 @@ export function followAbortSignal(followingController: AbortController, parentSi
   }
   // 3. Otherwise, add the following abort steps to parentSignal:
   else {
-    parentSignal.addEventListener('abort', function listener() {
+    const listener = () => {
       parentSignal.removeEventListener('abort', listener)
+      followingController.signal.removeEventListener('abort', listener)
       // 1. Signal abort on followingSignal.
       followingController.abort()
-    })
+    }
+    parentSignal.addEventListener('abort', listener)
+    followingController.signal.addEventListener('abort', listener)
   }
 }
