@@ -2,6 +2,7 @@ import {
   AbortController as AbortControllerImpl,
   AbortSignal as AbortSignalImpl
 } from 'abortcontroller-polyfill/dist/abortcontroller'
+import { DOMException } from './DOMException'
 
 type AbortControllerPolyfill = AbortController
 const AbortControllerPolyfill: typeof AbortController = AbortControllerImpl
@@ -35,4 +36,8 @@ export function followAbortSignal(followingController: AbortController, parentSi
     parentSignal.addEventListener('abort', listener)
     followingController.signal.addEventListener('abort', listener)
   }
+}
+
+export function createAbortError(): DOMException {
+  return new DOMException('Aborted', 'AbortError')
 }

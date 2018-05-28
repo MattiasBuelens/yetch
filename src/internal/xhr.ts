@@ -1,9 +1,9 @@
 import { support } from './support'
-import { DOMException } from './DOMException'
 import { Headers } from './Headers'
 import { Request } from './Request'
 import { Response, ResponseInit } from './Response'
 import { BodyInit } from './Body'
+import { createAbortError } from './AbortController'
 
 function parseHeaders(rawHeaders: string): Headers {
   const headers = new Headers()
@@ -19,16 +19,6 @@ function parseHeaders(rawHeaders: string): Headers {
     }
   })
   return headers
-}
-
-interface XhrOptions {
-  body: BodyInit
-  headers: Headers
-  method: string
-  responseType: XMLHttpRequestResponseType
-  url: string
-  signal: AbortSignal
-  withCredentials: boolean
 }
 
 abstract class Xhr {
@@ -49,26 +39,11 @@ abstract class Xhr {
   }
 
   send(): Promise<Response> {
-    return Promise.resolve(this._getXhrOptions())
-      .then((options) => {
-        this._send(options)
-        return this._responsePromise
-      })
+    this._send(this._request._bodyInit, this._getResponseType())
+    return this._responsePromise
   }
 
-  protected _getXhrOptions(): XhrOptions | Promise<XhrOptions> {
-    const responseType: XMLHttpRequestResponseType = support.blob ? 'blob' : ''
-    const withCredentials = this._request.credentials === 'include'
-    return {
-      body: this._request._bodyInit,
-      headers: this._request.headers,
-      method: this._request.method,
-      responseType: responseType,
-      url: this._request.url,
-      signal: this._request.signal,
-      withCredentials: withCredentials
-    }
-  }
+  protected abstract _getResponseType(): XMLHttpRequestResponseType;
 
   protected abstract _onHeadersReceived(init: ResponseInit): void;
 
@@ -87,11 +62,11 @@ abstract class Xhr {
   }
 
   protected _onAbort(): void {
-    this._xhr.abort()
-    this._rejectResponse(new DOMException('Aborted', 'AbortError'))
+    this._rejectResponse(createAbortError())
   }
 
-  private _send(options: XhrOptions) {
+  private _send(body: BodyInit, responseType: XMLHttpRequestResponseType) {
+    const request = this._request
     const xhr = this._xhr
     const abortXhr = () => this._abort()
 
@@ -113,25 +88,25 @@ abstract class Xhr {
     xhr.ontimeout = () => this._onTimeout()
     xhr.onabort = () => this._onAbort()
 
-    xhr.open(options.method, options.url, true)
+    xhr.open(request.method, request.url, true)
 
-    xhr.withCredentials = options.withCredentials
+    xhr.withCredentials = request.credentials === 'include'
 
-    if ('responseType' in xhr && options.responseType) {
-      xhr.responseType = options.responseType
+    if ('responseType' in xhr && responseType) {
+      xhr.responseType = responseType
     }
 
-    options.headers.forEach((value, name) => {
+    request.headers.forEach((value, name) => {
       xhr.setRequestHeader(name, value)
     })
 
-    options.signal.addEventListener('abort', abortXhr)
+    request.signal.addEventListener('abort', abortXhr)
 
     xhr.onloadend = () => {
-      options.signal.removeEventListener('abort', abortXhr)
+      request.signal.removeEventListener('abort', abortXhr)
     }
 
-    xhr.send(options.body || null)
+    xhr.send(body || null)
   }
 
   protected _abort() {
@@ -146,6 +121,10 @@ class FetchXhr extends Xhr {
 
   constructor(request: Request) {
     super(request)
+  }
+
+  protected _getResponseType(): XMLHttpRequestResponseType {
+    return support.blob ? 'blob' : ''
   }
 
   protected _onHeadersReceived(init: ResponseInit): void {
