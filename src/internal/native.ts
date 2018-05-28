@@ -111,10 +111,10 @@ function toPolyfillResponse(response: Response): Promise<ResponsePolyfill> {
 
 export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
   return new Promise<ResponsePolyfill>(resolve => {
-  const request = new RequestPolyfill(input, init)
-  const promise = toNativeRequest(request)
-    .then(fetch)
-    .then(toPolyfillResponse)
-  resolve(promise)
+    const request = new RequestPolyfill(input, init)
+    const promise = toNativeRequest(request)
+      .then(fetch)
+      .then(toPolyfillResponse)
+    resolve(promise)
   })
 }
