@@ -86,6 +86,7 @@ function readBlobAsText(blob: Blob): Promise<string> {
 }
 
 function readArrayBufferAsText(buf: ArrayBuffer): string {
+  // TODO Use TextDecoder if supported
   const view = new Uint8Array(buf)
   const chars = new Array(view.length)
 
@@ -118,6 +119,7 @@ function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer>
 }
 
 function readStreamAsText(readable: ReadableStream): Promise<string> {
+  // TODO Use TransformStream and TextDecoder if supported
   return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
 }
 
