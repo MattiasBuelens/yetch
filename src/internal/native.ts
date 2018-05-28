@@ -70,13 +70,13 @@ function toNativeRequestInit(init?: RequestInitPolyfill): RequestInit {
 }
 
 export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
-    let nativeInput: Request | string = (input instanceof RequestPolyfill) ? toNativeRequest(input) : input
-    let nativeInit: RequestInit = toNativeRequestInit(init)
-    return fetch(nativeInput, nativeInit)
-      .then((response) => {
-        // TODO Use ReadableStream as body init
-        return response.arrayBuffer().then(arrayBuffer => {
-          return new ResponsePolyfill(arrayBuffer, response)
-        })
+  let nativeInput: Request | string = (input instanceof RequestPolyfill) ? toNativeRequest(input) : input
+  let nativeInit: RequestInit = toNativeRequestInit(init)
+  return fetch(nativeInput, nativeInit)
+    .then((response) => {
+      // TODO Use ReadableStream as body init
+      return response.arrayBuffer().then(arrayBuffer => {
+        return new ResponsePolyfill(arrayBuffer, response)
       })
+    })
 }
