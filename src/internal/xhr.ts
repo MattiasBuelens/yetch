@@ -35,16 +35,16 @@ abstract class Xhr {
 
   protected readonly _request: Request
   protected readonly _xhr: XMLHttpRequest
-  private _promise: Promise<Response>
-  protected _resolve!: (response: Response) => void
-  protected _reject!: (reason: any) => void
+  private _responsePromise: Promise<Response>
+  protected _resolveResponse!: (response: Response) => void
+  protected _rejectResponse!: (reason: any) => void
 
   protected constructor(request: Request) {
     this._request = request
     this._xhr = new XMLHttpRequest()
-    this._promise = new Promise<Response>((resolve, reject) => {
-      this._resolve = resolve
-      this._reject = reject
+    this._responsePromise = new Promise<Response>((resolve, reject) => {
+      this._resolveResponse = resolve
+      this._rejectResponse = reject
     })
   }
 
@@ -52,7 +52,7 @@ abstract class Xhr {
     return Promise.resolve(this._getXhrOptions())
       .then((options) => {
         this._send(options)
-        return this._promise
+        return this._responsePromise
       })
   }
 
@@ -79,15 +79,16 @@ abstract class Xhr {
   }
 
   protected _onError(): void {
-    this._reject(new TypeError('Network request failed'))
+    this._rejectResponse(new TypeError('Network request failed'))
   }
 
   protected _onTimeout(): void {
-    this._reject(new TypeError('Network request failed'))
+    this._rejectResponse(new TypeError('Network request failed'))
   }
 
   protected _onAbort(): void {
-    this._reject(new DOMException('Aborted', 'AbortError'))
+    this._xhr.abort()
+    this._rejectResponse(new DOMException('Aborted', 'AbortError'))
   }
 
   private _send(options: XhrOptions) {
@@ -153,7 +154,7 @@ class FetchXhr extends Xhr {
 
   protected _onLoad(): void {
     const body = this._xhr.response || this._xhr.responseText
-    this._resolve(new Response(body, this._responseInit!))
+    this._resolveResponse(new Response(body, this._responseInit!))
   }
 
 }
