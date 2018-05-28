@@ -4,6 +4,7 @@ import { Request } from './Request'
 import { Response, ResponseInit } from './Response'
 import { BodyInit } from './Body'
 import { createAbortError } from './AbortController'
+import { ReadableStreamConstructor, ReadableStreamDefaultController } from './stream'
 
 function parseHeaders(rawHeaders: string): Headers {
   const headers = new Headers()
@@ -19,6 +20,20 @@ function parseHeaders(rawHeaders: string): Headers {
     }
   })
   return headers
+}
+
+type XhrResponseType = XMLHttpRequestResponseType | 'moz-chunked-arraybuffer';
+const mozChunkedArrayBufferType = 'moz-chunked-arraybuffer'
+
+function supportsXhrResponseType(type: XhrResponseType): boolean {
+  try {
+    const xhr = new XMLHttpRequest()
+    xhr.responseType = type as XMLHttpRequestResponseType
+    return xhr.responseType === type
+  } catch (e) {
+    // Internet Explorer throws when setting invalid value
+  }
+  return false
 }
 
 abstract class Xhr {
@@ -56,7 +71,7 @@ abstract class Xhr {
     }
   }
 
-  protected abstract _getResponseType(): XMLHttpRequestResponseType;
+  protected abstract _getResponseType(): XhrResponseType;
 
   protected abstract _onHeadersReceived(init: ResponseInit): void;
 
@@ -66,19 +81,23 @@ abstract class Xhr {
     return
   }
 
+  protected _handleError(error: Error): void {
+    this._rejectResponse(error)
+  }
+
   protected _onError(): void {
-    this._rejectResponse(new TypeError('Network request failed'))
+    this._handleError(new TypeError('Network request failed'))
   }
 
   protected _onTimeout(): void {
-    this._rejectResponse(new TypeError('Network request failed'))
+    this._handleError(new TypeError('Network request failed'))
   }
 
   protected _onAbort(): void {
-    this._rejectResponse(createAbortError())
+    this._handleError(createAbortError())
   }
 
-  private _send(body: BodyInit, responseType: XMLHttpRequestResponseType) {
+  private _send(body: BodyInit, responseType: XhrResponseType) {
     const request = this._request
     const xhr = this._xhr
     const abortXhr = () => this._abort()
@@ -106,7 +125,7 @@ abstract class Xhr {
     xhr.withCredentials = request.credentials === 'include'
 
     if ('responseType' in xhr && responseType) {
-      xhr.responseType = responseType
+      xhr.responseType = responseType as XMLHttpRequestResponseType
     }
 
     request.headers.forEach((value, name) => {
@@ -136,7 +155,7 @@ class FetchXhr extends Xhr {
     super(request)
   }
 
-  protected _getResponseType(): XMLHttpRequestResponseType {
+  protected _getResponseType(): XhrResponseType {
     return support.blob ? 'blob' : ''
   }
 
@@ -151,6 +170,60 @@ class FetchXhr extends Xhr {
 
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType
+class MozChunkedArrayBufferXhr extends Xhr {
+
+  private _responseStream?: ReadableStream = undefined
+  private _responseController?: ReadableStreamDefaultController = undefined
+  private _responseCancelled: boolean = false
+
+  constructor(request: Request) {
+    super(request)
+  }
+
+  protected _getResponseType(): XhrResponseType {
+    return mozChunkedArrayBufferType
+  }
+
+  protected _onHeadersReceived(init: ResponseInit): void {
+    this._responseStream = new (ReadableStream as ReadableStreamConstructor)({
+      start: (c) => {
+        this._responseController = c
+      },
+      cancel: () => {
+        this._responseCancelled = true
+        this._abort()
+      }
+    })
+    this._resolveResponse(new Response(this._responseStream, init))
+  }
+
+  protected _onProgress(): void {
+    if (!this._responseCancelled) {
+      this._responseController!.enqueue(new Uint8Array(this._xhr.response as ArrayBuffer))
+    }
+  }
+
+  protected _onLoad(): void {
+    this._responseController!.close()
+  }
+
+  protected _handleError(error: Error): void {
+    super._handleError(error)
+    if (this._responseController && !this._responseCancelled) {
+      this._responseCancelled = true
+      this._responseController.error(error)
+    }
+  }
+
+}
+
 export function xhrFetch(request: Request): Promise<Response> {
-  return new FetchXhr(request).send()
+  let xhr: Xhr
+  if (support.stream && supportsXhrResponseType(mozChunkedArrayBufferType)) {
+    xhr = new MozChunkedArrayBufferXhr(request)
+  } else {
+    xhr = new FetchXhr(request)
+  }
+  return xhr.send()
 }
