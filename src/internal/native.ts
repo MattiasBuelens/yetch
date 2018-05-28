@@ -53,6 +53,7 @@ function toNativeRequest(request: RequestPolyfill): Promise<Request> {
   if (request._bodyReadableStream) {
     if (nativeRequestSupportsStream()) {
       // Body is a stream, and native supports uploading a stream
+      // TODO convert polyfill stream to native stream
       bodyPromise = Promise.resolve(request._bodyReadableStream)
     } else {
       // Body is a stream, but native doesn't support uploading a stream

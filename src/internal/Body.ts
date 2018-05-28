@@ -125,6 +125,7 @@ function readStreamAsText(readable: ReadableStream): Promise<string> {
 }
 
 export function readArrayBufferAsStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
+  // TODO use stream polyfill
   return new (ReadableStream as ReadableStreamConstructor)({
     pull(c) {
       return fn()
@@ -219,6 +220,7 @@ abstract class Body {
       // TODO transfer stream
       // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
       // TODO attach abort signal to stream
+      // TODO convert native stream to polyfill stream
       this._bodyReadableStream = body
     } else {
       throw new Error('unsupported BodyInit type')
