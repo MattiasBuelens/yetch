@@ -1,6 +1,6 @@
 import { root } from './root'
 import { support } from './support'
-import { Request as RequestPolyfill, RequestInit as RequestInitPolyfill } from './Request'
+import { Request as RequestPolyfill } from './Request'
 import { Response as ResponsePolyfill } from './Response'
 import { Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill } from './Headers'
 import { BodyInit as BodyInitPolyfill, readArrayBufferAsStream } from './Body'
@@ -109,12 +109,8 @@ function toPolyfillResponse(response: Response): Promise<ResponsePolyfill> {
   })
 }
 
-export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
-  return new Promise<ResponsePolyfill>(resolve => {
-    const request = new RequestPolyfill(input, init)
-    const promise = toNativeRequest(request)
-      .then(fetch)
-      .then(toPolyfillResponse)
-    resolve(promise)
-  })
+export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill> {
+  return toNativeRequest(request)
+    .then(fetch)
+    .then(toPolyfillResponse)
 }

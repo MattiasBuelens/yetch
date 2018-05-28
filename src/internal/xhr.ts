@@ -1,7 +1,7 @@
 import { support } from './support'
 import { DOMException } from './DOMException'
 import { Headers } from './Headers'
-import { Request, RequestInit } from './Request'
+import { Request } from './Request'
 import { Response, ResponseInit } from './Response'
 import { BodyInit } from './Body'
 
@@ -158,9 +158,6 @@ class FetchXhr extends Xhr {
 
 }
 
-export function xhrFetch(input: Request | string, init?: RequestInit): Promise<Response> {
-  return new Promise<Response>(resolve => {
-    const request = new Request(input, init)
-    resolve(new FetchXhr(request).send())
-  })
+export function xhrFetch(request: Request): Promise<Response> {
+  return new FetchXhr(request).send()
 }
