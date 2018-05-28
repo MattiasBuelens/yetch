@@ -1,7 +1,9 @@
 import { root } from './root'
+import { support } from './support'
 import { Request as RequestPolyfill, RequestInit as RequestInitPolyfill } from './Request'
 import { Response as ResponsePolyfill } from './Response'
 import { Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill } from './Headers'
+import { BodyInit as BodyInitPolyfill, readArrayBufferAsStream } from './Body'
 import { followAbortSignal } from './AbortController'
 
 const fetch = root.fetch!
@@ -12,14 +14,18 @@ const AbortSignal = root.AbortSignal!
 const ReadableStream = root.ReadableStream!
 
 export function nativeFetchSupported() {
-  return !!fetch && nativeFetchSupportsAbort() && nativeFetchSupportsStream()
+  return !!fetch && nativeFetchSupportsAbort() && nativeResponseSupportsStream()
 }
 
 function nativeFetchSupportsAbort() {
   return !!AbortController && !!Request && 'signal' in Request.prototype
 }
 
-function nativeFetchSupportsStream() {
+function nativeRequestSupportsStream() {
+  return !!Request && 'body' in Request.prototype
+}
+
+function nativeResponseSupportsStream() {
   return !!Response && 'body' in Response.prototype
 }
 
@@ -42,41 +48,70 @@ function toNativeAbortSignal(signal?: AbortSignal): AbortSignal | undefined {
   return controller.signal
 }
 
-function toNativeRequest(request: RequestPolyfill): Request {
-  return new Request(request.url, {
-    body: request._bodyInit as BodyInit,
-    credentials: request.credentials,
-    headers: collectHeaders(request.headers),
-    method: request.method,
-    mode: request.mode,
-    referrer: request.referrer,
-    signal: toNativeAbortSignal(request.signal)
+function toNativeRequest(request: RequestPolyfill): Promise<Request> {
+  let bodyPromise: Promise<BodyInit>
+  if (request._bodyReadableStream) {
+    if (nativeRequestSupportsStream()) {
+      // Body is a stream, and native supports uploading a stream
+      bodyPromise = Promise.resolve(request._bodyReadableStream)
+    } else {
+      // Body is a stream, but native doesn't support uploading a stream
+      // Upload as array buffer instead
+      bodyPromise = request.arrayBuffer!()
+    }
+  } else {
+    // Body is not a stream, so upload as-is
+    bodyPromise = Promise.resolve(request._bodyInit)
+  }
+
+  return bodyPromise.then((bodyInit) => {
+    return new Request(request.url, {
+      body: bodyInit,
+      credentials: request.credentials,
+      headers: collectHeaders(request.headers),
+      method: request.method,
+      mode: request.mode,
+      referrer: request.referrer,
+      signal: toNativeAbortSignal(request.signal)
+    })
   })
 }
 
-function toNativeRequestInit(init?: RequestInitPolyfill): RequestInit {
-  if (!init) {
-    return {}
-  }
-  return {
-    body: init.body as BodyInit,
-    credentials: init.credentials,
-    headers: collectHeaders(init.headers),
-    method: init.method,
-    mode: init.mode,
-    referrer: init.referrer,
-    signal: toNativeAbortSignal(init.signal)
+function toPolyfillBodyInit(response: Response): Promise<BodyInit> {
+  let bodyInit: BodyInitPolyfill
+  if (support.stream) {
+    // Create response from stream
+    if (nativeResponseSupportsStream()) {
+      bodyInit = response.body
+    } else {
+      // Cannot read response as a stream
+      // Construct a stream that reads the entire response as a single array buffer instead
+      bodyInit = readArrayBufferAsStream(() => response.arrayBuffer())
+    }
+    return Promise.resolve(bodyInit)
+  } else {
+    // Streams are not supported
+    // Return a promise that reads the entire response
+    if (support.blob) {
+      return response.blob()
+    } else if (support.arrayBuffer) {
+      return response.arrayBuffer()
+    } else {
+      return response.text()
+    }
   }
 }
 
+function toPolyfillResponse(response: Response): Promise<ResponsePolyfill> {
+  // TODO Construct Response from Promise<BodyInit>?
+  return toPolyfillBodyInit(response).then((bodyInit) => {
+    return new ResponsePolyfill(bodyInit, response)
+  })
+}
+
 export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
-  let nativeInput: Request | string = (input instanceof RequestPolyfill) ? toNativeRequest(input) : input
-  let nativeInit: RequestInit = toNativeRequestInit(init)
-  return fetch(nativeInput, nativeInit)
-    .then((response) => {
-      // TODO Use ReadableStream as body init
-      return response.arrayBuffer().then(arrayBuffer => {
-        return new ResponsePolyfill(arrayBuffer, response)
-      })
-    })
+  const request = new RequestPolyfill(input, init)
+  return toNativeRequest(request)
+    .then(fetch)
+    .then(toPolyfillResponse)
 }

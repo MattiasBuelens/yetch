@@ -10,6 +10,7 @@ export type BodyInit
   | ArrayBuffer
   | FormData
   | URLSearchParams
+  | ReadableStream
   | string
   | null;
 
@@ -123,7 +124,7 @@ function readStreamAsText(readable: ReadableStream): Promise<string> {
   return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
 }
 
-function createStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
+export function readArrayBufferAsStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
   return new (ReadableStream as ReadableStreamConstructor)({
     pull(c) {
       return fn()
@@ -306,7 +307,7 @@ if (support.stream) {
         return this._bodyReadableStream
       } else {
         // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
-        return createStream(() => this.arrayBuffer!())
+        return readArrayBufferAsStream(() => this.arrayBuffer!())
       }
     }
   })
