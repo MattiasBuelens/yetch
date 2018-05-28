@@ -218,6 +218,7 @@ abstract class Body {
     } else if (support.stream && isReadableStream(body)) {
       // TODO transfer stream
       // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
+      // TODO attach abort signal to stream
       this._bodyReadableStream = body
     } else {
       throw new Error('unsupported BodyInit type')
@@ -307,6 +308,7 @@ if (support.stream) {
         return this._bodyReadableStream
       } else {
         // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
+        // TODO attach abort signal to stream
         return readArrayBufferAsStream(() => this.arrayBuffer!())
       }
     }

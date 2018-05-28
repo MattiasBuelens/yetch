@@ -86,6 +86,7 @@ function toPolyfillBodyInit(response: Response): Promise<BodyInit> {
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
+      // TODO attach abort signal to stream
       bodyInit = readArrayBufferAsStream(() => response.arrayBuffer())
     }
     return Promise.resolve(bodyInit)
