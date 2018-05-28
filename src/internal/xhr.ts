@@ -39,8 +39,21 @@ abstract class Xhr {
   }
 
   send(): Promise<Response> {
-    this._send(this._request._bodyInit, this._getResponseType())
-    return this._responsePromise
+    return Promise.resolve(this._readBody()).then(body => {
+      this._send(body, this._getResponseType())
+      return this._responsePromise
+    })
+  }
+
+  protected _readBody(): Promise<BodyInit> {
+    const request = this._request
+    if (request._bodyReadableStream) {
+      // Body is a stream, upload as array buffer instead
+      return request.arrayBuffer!()
+    } else {
+      // Body is not a stream, so upload as-is
+      return Promise.resolve(request._bodyInit)
+    }
   }
 
   protected abstract _getResponseType(): XMLHttpRequestResponseType;
