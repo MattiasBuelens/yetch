@@ -86,8 +86,13 @@ function readBlobAsText(blob: Blob): Promise<string> {
   return promise
 }
 
+function createBlob(blobParts: Array<ArrayBuffer | ArrayBufferView | Blob | string>, contentType?: string | null | undefined): Blob {
+  // TODO Use BlobBuilder for backwards compatibility
+  return new Blob(blobParts, { type: contentType || '' })
+}
+
 function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
-  return readBlobAsText(new Blob([buf]))
+  return readBlobAsText(createBlob([buf]))
 }
 
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
@@ -104,8 +109,8 @@ function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
   return reader.read().then(pump)
 }
 
-function readStreamAsBlob(readable: ReadableStream): Promise<Blob> {
-  return readAllChunks(readable).then((chunks) => new Blob(chunks))
+function readStreamAsBlob(readable: ReadableStream, contentType?: string | null | undefined): Promise<Blob> {
+  return readAllChunks(readable).then((chunks) => createBlob(chunks, contentType))
 }
 
 function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
@@ -206,7 +211,7 @@ abstract class Body {
     } else if (support.arrayBuffer && support.blob && isDataView(body)) {
       this._bodyArrayBuffer = bufferClone(body.buffer)
       // IE 10-11 can't handle a DataView body.
-      this._bodyInit = new Blob([this._bodyArrayBuffer])
+      this._bodyInit = createBlob([this._bodyArrayBuffer], this.headers.get('content-type'))
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
@@ -271,13 +276,13 @@ if (support.blob) {
     if (this._bodyBlob) {
       return Promise.resolve(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(new Blob([this._bodyArrayBuffer]))
+      return Promise.resolve(createBlob([this._bodyArrayBuffer], this.headers.get('content-type')))
     } else if (this._bodyReadableStream) {
-      return readStreamAsBlob(this._bodyReadableStream)
+      return readStreamAsBlob(this._bodyReadableStream, this.headers.get('content-type'))
     } else if (this._bodyFormData) {
       throw new Error('could not read FormData body as Blob')
     } else {
-      return Promise.resolve(new Blob([this._bodyText!]))
+      return Promise.resolve(createBlob([this._bodyText!], this.headers.get('content-type')))
     }
   }
 
