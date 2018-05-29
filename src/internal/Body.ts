@@ -181,8 +181,9 @@ abstract class Body {
 
   body?: ReadableStream | null
   bodyUsed: boolean = false
-  abstract headers: Headers
 
+  /** @internal */
+  _bodyMimeType: string
   /** @internal */
   _bodyInit!: BodyInit
   /** @internal */
@@ -213,7 +214,7 @@ abstract class Body {
     } else if (support.arrayBuffer && support.blob && isDataView(body)) {
       this._bodyArrayBuffer = bufferClone(body.buffer)
       // IE 10-11 can't handle a DataView body.
-      this._bodyInit = createBlobWithType([this._bodyArrayBuffer], headers.get('content-type'))
+      this._bodyInit = createBlobWithType([this._bodyArrayBuffer])
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
@@ -226,13 +227,21 @@ abstract class Body {
       throw new Error('unsupported BodyInit type')
     }
 
-    if (!headers.get('content-type')) {
+    this._bodyMimeType = ''
+    if (headers.has('content-type')) {
+      // https://fetch.spec.whatwg.org/#concept-header-extract-mime-type
+      this._bodyMimeType = (headers.get('content-type') || '').toLowerCase()
+    } else {
+      // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
       if (typeof body === 'string') {
-        headers.set('content-type', 'text/plain;charset=UTF-8')
+        this._bodyMimeType = 'text/plain;charset=UTF-8'
       } else if (this._bodyBlob && this._bodyBlob.type) {
-        headers.set('content-type', this._bodyBlob.type)
+        this._bodyMimeType = this._bodyBlob.type
       } else if (support.searchParams && isURLSearchParams(body)) {
-        headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
+        this._bodyMimeType = 'application/x-www-form-urlencoded;charset=UTF-8'
+      }
+      if (this._bodyMimeType) {
+        headers.set('content-type', this._bodyMimeType)
       }
     }
 
@@ -286,13 +295,13 @@ if (support.blob) {
     if (this._bodyBlob) {
       return Promise.resolve(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(createBlobWithType([this._bodyArrayBuffer], this.headers.get('content-type')))
+      return Promise.resolve(createBlobWithType([this._bodyArrayBuffer], this._bodyMimeType))
     } else if (this._bodyReadableStream) {
-      return readStreamAsBlob(this._bodyReadableStream, this.headers.get('content-type'))
+      return readStreamAsBlob(this._bodyReadableStream, this._bodyMimeType)
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
-      return Promise.resolve(createBlobWithType([this._bodyText!], this.headers.get('content-type')))
+      return Promise.resolve(createBlobWithType([this._bodyText!], this._bodyMimeType))
     }
   }
 
