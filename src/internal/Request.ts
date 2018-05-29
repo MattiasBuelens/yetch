@@ -35,8 +35,8 @@ class Request extends Body {
   url: string
 
   constructor(input: Request | string, options?: RequestInit) {
-    super()
     options = options || {}
+    let url: string
     let body: BodyInit = options.body || null
     let credentials: RequestCredentials | undefined
     let headers: Headers | undefined
@@ -48,7 +48,7 @@ class Request extends Body {
       if (input.bodyUsed) {
         throw new TypeError('Already read')
       }
-      this.url = input.url
+      url = input.url
       credentials = input.credentials
       if (!options.headers) {
         headers = new Headers(input.headers)
@@ -61,18 +61,20 @@ class Request extends Body {
         input.bodyUsed = true
       }
     } else {
-      this.url = String(input)
+      url = String(input)
       credentials = 'same-origin'
       method = 'GET'
       mode = 'cors'
       signal = null
     }
 
-    this.credentials = options.credentials || credentials
     if (options.headers || !headers) {
       headers = new Headers(options.headers)
     }
+    super(body, headers)
+    this.url = url
     this.headers = headers
+    this.credentials = options.credentials || credentials
     this.method = normalizeMethod(options.method || method)
     this.mode = options.mode || mode
     this.signal = options.signal || signal || createDefaultAbortSignal()
@@ -81,7 +83,6 @@ class Request extends Body {
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {
       throw new TypeError('Body not allowed for GET or HEAD requests')
     }
-    this._initBody(body)
   }
 
   clone() {

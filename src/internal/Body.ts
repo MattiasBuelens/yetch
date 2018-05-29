@@ -197,8 +197,9 @@ abstract class Body {
   _bodyReadableStream?: ReadableStream
 
   /** @internal */
-  _initBody(body?: BodyInit) {
+  protected constructor(body: BodyInit, headers: Headers) {
     this._bodyInit = body || null
+
     if (!body) {
       this._bodyText = ''
     } else if (typeof body === 'string') {
@@ -212,7 +213,7 @@ abstract class Body {
     } else if (support.arrayBuffer && support.blob && isDataView(body)) {
       this._bodyArrayBuffer = bufferClone(body.buffer)
       // IE 10-11 can't handle a DataView body.
-      this._bodyInit = createBlobWithType([this._bodyArrayBuffer], this.headers.get('content-type'))
+      this._bodyInit = createBlobWithType([this._bodyArrayBuffer], headers.get('content-type'))
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
@@ -225,13 +226,13 @@ abstract class Body {
       throw new Error('unsupported BodyInit type')
     }
 
-    if (!this.headers.get('content-type')) {
+    if (!headers.get('content-type')) {
       if (typeof body === 'string') {
-        this.headers.set('content-type', 'text/plain;charset=UTF-8')
+        headers.set('content-type', 'text/plain;charset=UTF-8')
       } else if (this._bodyBlob && this._bodyBlob.type) {
-        this.headers.set('content-type', this._bodyBlob.type)
+        headers.set('content-type', this._bodyBlob.type)
       } else if (support.searchParams && isURLSearchParams(body)) {
-        this.headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
+        headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
       }
     }
 
