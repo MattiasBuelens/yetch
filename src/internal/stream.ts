@@ -1,10 +1,14 @@
 // https://streams.spec.whatwg.org
 
 export interface ReadableStreamConstructor {
-  readonly prototype: ReadableStream;
+  readonly prototype: ReadableStreamType;
 
   new<R = any>(underlyingSource?: ReadableStreamDefaultUnderlyingSource,
-               strategy?: Partial<QueuingStrategy>): ReadableStream;
+               strategy?: Partial<QueuingStrategy>): ReadableStreamType;
+}
+
+export interface ReadableStreamType extends ReadableStream {
+  tee?(): [ReadableStreamType, ReadableStreamType];
 }
 
 export interface ReadableStreamDefaultUnderlyingSource {

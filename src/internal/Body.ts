@@ -1,7 +1,7 @@
 import { support } from './support'
 import { Headers } from './Headers'
 import { concatUint8Array, TypedArray } from './util'
-import { ReadableStreamConstructor } from './stream'
+import { ReadableStreamConstructor, ReadableStreamType } from './stream'
 import { BlobPart, createBlob } from './blob'
 
 export type BodyInit
@@ -51,7 +51,7 @@ const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || funct
   return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
 }
 
-const isReadableStream = function(obj: any): obj is ReadableStream {
+const isReadableStream = function(obj: any): obj is ReadableStreamType {
   return obj && ReadableStream.prototype.isPrototypeOf(obj)
 }
 
@@ -95,7 +95,7 @@ function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
   return readBlobAsText(createBlobWithType([buf]))
 }
 
-function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
+function readAllChunks(readable: ReadableStreamType): Promise<Array<Uint8Array>> {
   const reader = readable.getReader()
   const chunks: Uint8Array[] = []
   const pump = ({ done, value }: IteratorResult<Uint8Array>): Promise<Array<Uint8Array>> => {
@@ -109,20 +109,20 @@ function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
   return reader.read().then(pump)
 }
 
-function readStreamAsBlob(readable: ReadableStream, contentType?: string | null | undefined): Promise<Blob> {
+function readStreamAsBlob(readable: ReadableStreamType, contentType?: string | null | undefined): Promise<Blob> {
   return readAllChunks(readable).then((chunks) => createBlobWithType(chunks, contentType))
 }
 
-function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
+function readStreamAsArrayBuffer(readable: ReadableStreamType): Promise<ArrayBuffer> {
   return readAllChunks(readable).then((chunks) => concatUint8Array(chunks).buffer)
 }
 
-function readStreamAsText(readable: ReadableStream): Promise<string> {
+function readStreamAsText(readable: ReadableStreamType): Promise<string> {
   // TODO Use TransformStream and TextDecoder if supported
   return readStreamAsBlob(readable).then(readBlobAsText)
 }
 
-export function readArrayBufferAsStream(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void): ReadableStream {
+export function readArrayBufferAsStream(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void): ReadableStreamType {
   // TODO use stream polyfill
   return new (ReadableStream as ReadableStreamConstructor)({
     pull(c) {
@@ -183,7 +183,7 @@ function decode(body: string): FormData {
 
 abstract class Body {
 
-  body?: ReadableStream | null
+  body?: ReadableStreamType | null
   bodyUsed: boolean = false
 
   /** @internal */
@@ -199,7 +199,7 @@ abstract class Body {
   /** @internal */
   _bodyArrayBuffer?: ArrayBuffer
   /** @internal */
-  _bodyReadableStream?: ReadableStream
+  _bodyReadableStream?: ReadableStreamType
 
   /** @internal */
   protected constructor(body: BodyInit, headers: Headers) {
