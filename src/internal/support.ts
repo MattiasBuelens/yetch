@@ -21,5 +21,5 @@ export const support = {
     } catch (e) {
       return false
     }
-  })
+  })()
 }
