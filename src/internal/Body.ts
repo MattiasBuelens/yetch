@@ -86,15 +86,8 @@ function readBlobAsText(blob: Blob): Promise<string> {
   return promise
 }
 
-function readArrayBufferAsText(buf: ArrayBuffer): string {
-  // TODO Use TextDecoder if supported
-  const view = new Uint8Array(buf)
-  const chars = new Array(view.length)
-
-  for (let i = 0; i < view.length; i++) {
-    chars[i] = String.fromCharCode(view[i])
-  }
-  return chars.join('')
+function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
+  return readBlobAsText(new Blob([buf]))
 }
 
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
@@ -121,7 +114,7 @@ function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer>
 
 function readStreamAsText(readable: ReadableStream): Promise<string> {
   // TODO Use TransformStream and TextDecoder if supported
-  return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
+  return readStreamAsBlob(readable).then(readBlobAsText)
 }
 
 export function readArrayBufferAsStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
@@ -246,7 +239,7 @@ abstract class Body {
     if (this._bodyBlob) {
       return readBlobAsText(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer))
+      return readArrayBufferAsText(this._bodyArrayBuffer)
     } else if (this._bodyReadableStream) {
       return readStreamAsText(this._bodyReadableStream)
     } else if (this._bodyFormData) {
@@ -282,15 +275,19 @@ if (support.blob) {
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream)
     } else if (this._bodyFormData) {
-      throw new Error('could not read FormData body as blob')
+      throw new Error('could not read FormData body as Blob')
     } else {
-      return Promise.resolve(new Blob([this._bodyText]))
+      return Promise.resolve(new Blob([this._bodyText!]))
     }
   }
 
   Body.prototype.arrayBuffer = function(): Promise<ArrayBuffer> {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+    } else if (this._bodyReadableStream) {
+      return readStreamAsArrayBuffer(this._bodyReadableStream)
+    } else if (this._bodyFormData) {
+      throw new Error('could not read FormData body as ArrayBuffer')
     } else {
       return this.blob!().then(readBlobAsArrayBuffer)
     }
