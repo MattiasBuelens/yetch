@@ -1,5 +1,5 @@
 import { Headers, HeadersInit } from './Headers'
-import { Body, BodyInit } from './Body'
+import { Body, BodyInit, cloneBody } from './Body'
 
 const redirectStatuses = [301, 302, 303, 307, 308]
 
@@ -32,7 +32,7 @@ class Response extends Body {
   }
 
   clone(): Response {
-    return new Response(this._bodyInit, {
+    return new Response(cloneBody(this), {
       status: this.status,
       statusText: this.statusText,
       headers: new Headers(this.headers),

@@ -57,7 +57,7 @@ const isReadableStream = function(obj: any): obj is ReadableStreamType {
 
 function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
-    return Promise.reject(new TypeError('Already read'))
+    return Promise.reject(new TypeError('Already used'))
   }
   body.bodyUsed = true
 }
@@ -179,6 +179,24 @@ function decode(body: string): FormData {
     }
   })
   return form
+}
+
+export function cloneBody(body: Body): BodyInit {
+  if (body.bodyUsed) {
+    throw new TypeError('Already used')
+  }
+  if (body._bodyReadableStream) {
+    // https://fetch.spec.whatwg.org/#concept-body-clone
+    if (!body._bodyReadableStream.tee) {
+      throw new Error('could not clone ReadableStream body')
+    }
+    const [stream1, stream2] = body._bodyReadableStream.tee()
+    body._bodyInit = stream1
+    body._bodyReadableStream = stream1
+    return stream2
+  } else {
+    return body._bodyInit
+  }
 }
 
 abstract class Body {

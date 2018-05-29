@@ -1,5 +1,5 @@
 import { Headers, HeadersInit } from './Headers'
-import { Body, BodyInit } from './Body'
+import { Body, BodyInit, cloneBody } from './Body'
 import { AbortController, AbortSignal } from './AbortController'
 
 export interface RequestInit {
@@ -46,7 +46,7 @@ class Request extends Body {
 
     if (input instanceof Request) {
       if (input.bodyUsed) {
-        throw new TypeError('Already read')
+        throw new TypeError('Already used')
       }
       url = input.url
       credentials = input.credentials
@@ -86,7 +86,9 @@ class Request extends Body {
   }
 
   clone() {
-    return new Request(this, { body: this._bodyInit })
+    return new Request(this, {
+      body: cloneBody(this)
+    })
   }
 
 }
