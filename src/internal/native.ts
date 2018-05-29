@@ -10,8 +10,6 @@ const fetch = root.fetch!
 const Request = root.Request!
 const Response = root.Response!
 const AbortController = root.AbortController!
-const AbortSignal = root.AbortSignal!
-const ReadableStream = root.ReadableStream!
 
 export function nativeFetchSupported() {
   return !!fetch && nativeFetchSupportsAbort() && nativeResponseSupportsStream()
@@ -39,16 +37,7 @@ function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<
   return list
 }
 
-function toNativeAbortSignal(signal?: AbortSignal): AbortSignal | undefined {
-  if (!signal || signal instanceof AbortSignal) {
-    return signal
-  }
-  const controller = new AbortController()
-  followAbortSignal(controller, signal)
-  return controller.signal
-}
-
-function toNativeRequest(request: RequestPolyfill): Promise<Request> {
+function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
   let bodyPromise: Promise<BodyInit>
   if (request._bodyReadableStream) {
     if (nativeRequestSupportsStream()) {
@@ -65,6 +54,10 @@ function toNativeRequest(request: RequestPolyfill): Promise<Request> {
     bodyPromise = Promise.resolve(request._bodyInit)
   }
 
+  if (request.signal) {
+    followAbortSignal(controller, request.signal)
+  }
+
   return bodyPromise.then((bodyInit) => {
     return new Request(request.url, {
       body: bodyInit,
@@ -73,12 +66,12 @@ function toNativeRequest(request: RequestPolyfill): Promise<Request> {
       method: request.method,
       mode: request.mode,
       referrer: request.referrer,
-      signal: toNativeAbortSignal(request.signal)
+      signal: controller.signal
     })
   })
 }
 
-function toPolyfillBodyInit(response: Response): Promise<BodyInit> {
+function toPolyfillBodyInit(response: Response, controller: AbortController): Promise<BodyInit> {
   let bodyInit: BodyInitPolyfill
   if (support.stream) {
     // Create response from stream
@@ -87,8 +80,13 @@ function toPolyfillBodyInit(response: Response): Promise<BodyInit> {
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
-      // TODO attach abort signal to stream
-      bodyInit = readArrayBufferAsStream(() => response.arrayBuffer())
+      bodyInit = readArrayBufferAsStream(
+        () => response.arrayBuffer(),
+        () => {
+          // abort ongoing fetch when response body is cancelled
+          controller.abort()
+        }
+      )
     }
     return Promise.resolve(bodyInit)
   } else {
@@ -104,15 +102,16 @@ function toPolyfillBodyInit(response: Response): Promise<BodyInit> {
   }
 }
 
-function toPolyfillResponse(response: Response): Promise<ResponsePolyfill> {
+function toPolyfillResponse(response: Response, controller: AbortController): Promise<ResponsePolyfill> {
   // TODO Construct Response from Promise<BodyInit>?
-  return toPolyfillBodyInit(response).then((bodyInit) => {
+  return toPolyfillBodyInit(response, controller).then((bodyInit) => {
     return new ResponsePolyfill(bodyInit, response)
   })
 }
 
 export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill> {
-  return toNativeRequest(request)
+  const controller = new AbortController()
+  return toNativeRequest(request, controller)
     .then(fetch)
-    .then(toPolyfillResponse)
+    .then((response) => toPolyfillResponse(response, controller))
 }
