@@ -179,6 +179,7 @@ function decode(body: string): FormData {
 
 abstract class Body {
 
+  body?: ReadableStream | null
   bodyUsed: boolean = false
   abstract headers: Headers
 
@@ -233,6 +234,16 @@ abstract class Body {
         this.headers.set('content-type', 'application/x-www-form-urlencoded;charset=UTF-8')
       }
     }
+
+    if (support.stream) {
+      if (this._bodyReadableStream) {
+        this.body = this._bodyReadableStream
+      } else {
+        // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
+        // TODO attach abort signal to stream
+        this.body = readArrayBufferAsStream(() => this.arrayBuffer!())
+      }
+    }
   }
 
   text(): Promise<string> {
@@ -261,8 +272,6 @@ abstract class Body {
   blob?: () => Promise<Blob>
   arrayBuffer?: () => Promise<ArrayBuffer>
   formData?: () => Promise<FormData>
-
-  readonly body?: ReadableStream | null
 
 }
 
@@ -303,20 +312,6 @@ if (support.formData) {
   Body.prototype.formData = function(this: Body): Promise<FormData> {
     return this.text().then(decode)
   }
-}
-
-if (support.stream) {
-  Object.defineProperty(Body.prototype, 'body', {
-    get(this: Body) {
-      if (this._bodyReadableStream) {
-        return this._bodyReadableStream
-      } else {
-        // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
-        // TODO attach abort signal to stream
-        return readArrayBufferAsStream(() => this.arrayBuffer!())
-      }
-    }
-  })
 }
 
 export { Body }
