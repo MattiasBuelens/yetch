@@ -267,7 +267,7 @@ abstract class Body {
 }
 
 if (support.blob) {
-  Body.prototype.blob = function(): Promise<Blob> {
+  Body.prototype.blob = function(this: Body): Promise<Blob> {
     const rejected = consumed(this)
     if (rejected) {
       return rejected
@@ -286,7 +286,7 @@ if (support.blob) {
     }
   }
 
-  Body.prototype.arrayBuffer = function(): Promise<ArrayBuffer> {
+  Body.prototype.arrayBuffer = function(this: Body): Promise<ArrayBuffer> {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
     } else if (this._bodyReadableStream) {
@@ -300,14 +300,14 @@ if (support.blob) {
 }
 
 if (support.formData) {
-  Body.prototype.formData = function(): Promise<FormData> {
+  Body.prototype.formData = function(this: Body): Promise<FormData> {
     return this.text().then(decode)
   }
 }
 
 if (support.stream) {
   Object.defineProperty(Body.prototype, 'body', {
-    get() {
+    get(this: Body) {
       if (this._bodyReadableStream) {
         return this._bodyReadableStream
       } else {
