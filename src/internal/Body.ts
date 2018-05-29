@@ -122,17 +122,21 @@ function readStreamAsText(readable: ReadableStream): Promise<string> {
   return readStreamAsBlob(readable).then(readBlobAsText)
 }
 
-export function readArrayBufferAsStream(fn: () => Promise<ArrayBuffer>): ReadableStream {
+export function readArrayBufferAsStream(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void): ReadableStream {
   // TODO use stream polyfill
   return new (ReadableStream as ReadableStreamConstructor)({
     pull(c) {
-      return fn()
+      return pull()
         .then(chunk => {
           c.enqueue(new Uint8Array(chunk))
           c.close()
         })
+    },
+    cancel(reason: any) {
+      if (cancel) {
+        cancel(reason)
+      }
     }
-    // TODO cancel must abort ongoing fetch
   }, {
     highWaterMark: 0 // do not pull immediately
   })
@@ -249,9 +253,16 @@ abstract class Body {
       if (this._bodyReadableStream) {
         this.body = this._bodyReadableStream
       } else {
-        // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
         // TODO attach abort signal to stream
-        this.body = readArrayBufferAsStream(() => this.arrayBuffer!())
+        this.body = readArrayBufferAsStream(
+          () => {
+            return this.arrayBuffer!() // also sets bodyUsed to true
+          },
+          () => {
+            this.bodyUsed = true
+            // TODO abort ongoing fetch
+          }
+        )
       }
     }
   }
