@@ -248,7 +248,7 @@ abstract class Body {
     } else if (this._bodyReadableStream) {
       return readStreamAsText(this._bodyReadableStream)
     } else if (this._bodyFormData) {
-      throw new Error('could not read FormData body as text')
+      return Promise.reject(new Error('could not read FormData body as text'))
     } else {
       return Promise.resolve(this._bodyText!)
     }
@@ -280,7 +280,7 @@ if (support.blob) {
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream, this.headers.get('content-type'))
     } else if (this._bodyFormData) {
-      throw new Error('could not read FormData body as Blob')
+      return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
       return Promise.resolve(createBlob([this._bodyText!], this.headers.get('content-type')))
     }
@@ -292,7 +292,7 @@ if (support.blob) {
     } else if (this._bodyReadableStream) {
       return readStreamAsArrayBuffer(this._bodyReadableStream)
     } else if (this._bodyFormData) {
-      throw new Error('could not read FormData body as ArrayBuffer')
+      return Promise.reject(new Error('could not read FormData body as ArrayBuffer'))
     } else {
       return this.blob!().then(readBlobAsArrayBuffer)
     }
