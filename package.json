@@ -14,7 +14,8 @@
     "@types/node": "^10.1.2",
     "abortcontroller-polyfill": "^1.1.9",
     "chai": "^4.1.2",
-    "jshint": "2.8.0",
+    "eslint": "^4.19.1",
+    "eslint-plugin-github": "^1.0.0",
     "karma": "^1.7.1",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
@@ -40,7 +41,7 @@
     "build": "npm run build:cjs && npm run build:bundle",
     "build:bundle": "rollup -c",
     "build:cjs": "tsc -p ./src",
-    "lint": "jshint src/**/*.js test/*.js",
+    "lint": "eslint --report-unused-disable-directives *.js test/*.js",
     "karma": "karma start ./test/karma.config.js --no-single-run --auto-watch",
     "pretest": "npm run lint && npm run build",
     "test": "karma start ./test/karma.config.js && karma start ./test/karma-worker.config.js"
