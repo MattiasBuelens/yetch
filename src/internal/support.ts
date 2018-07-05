@@ -9,7 +9,7 @@ export const support = {
   arrayBuffer: 'ArrayBuffer' in root,
   stream:
     'ReadableStream' in root &&
-    (function() {
+    (() => {
       try {
         // Edge does not support developer-constructed streams
         new ReadableStream()

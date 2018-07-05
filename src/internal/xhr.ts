@@ -12,7 +12,7 @@ function parseHeaders(rawHeaders: string): Headers {
   // Replace instances of \r\n and \n followed by at least one space or horizontal tab with a space
   // https://tools.ietf.org/html/rfc7230#section-3.2
   const preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, ' ')
-  preProcessedHeaders.split(/\r?\n/).forEach(function(line) {
+  preProcessedHeaders.split(/\r?\n/).forEach(line => {
     const parts = line.split(':')
     const key = parts.shift()!.trim()
     if (key) {

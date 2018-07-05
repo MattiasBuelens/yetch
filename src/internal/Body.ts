@@ -27,23 +27,23 @@ const viewClasses = [
   '[object Float64Array]'
 ]
 
-const isBlob = function(obj: any): obj is Blob {
+function isBlob(obj: any): obj is Blob {
   return obj && Blob.prototype.isPrototypeOf(obj)
 }
 
-const isFormData = function(obj: any): obj is FormData {
+function isFormData(obj: any): obj is FormData {
   return obj && FormData.prototype.isPrototypeOf(obj)
 }
 
-const isURLSearchParams = function(obj: any): obj is URLSearchParams {
+function isURLSearchParams(obj: any): obj is URLSearchParams {
   return obj && URLSearchParams.prototype.isPrototypeOf(obj)
 }
 
-const isArrayBuffer = function(obj: any): obj is ArrayBuffer {
+function isArrayBuffer(obj: any): obj is ArrayBuffer {
   return obj && ArrayBuffer.prototype.isPrototypeOf(obj)
 }
 
-const isDataView = function(obj: any): obj is DataView {
+function isDataView(obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
@@ -53,7 +53,7 @@ const isArrayBufferView: typeof ArrayBuffer.isView =
     return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
   }
 
-const isReadableStream = function(obj: any): obj is ReadableStream {
+function isReadableStream(obj: any): obj is ReadableStream {
   return obj && ReadableStream.prototype.isPrototypeOf(obj)
 }
 
@@ -65,7 +65,7 @@ function consumed(body: Body): Promise<never> | undefined {
 }
 
 function fileReaderReady<T>(reader: FileReader): Promise<T> {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     reader.onload = () => {
       resolve(reader.result)
     }
@@ -180,7 +180,7 @@ function decode(body: string): FormData {
   body
     .trim()
     .split('&')
-    .forEach(function(bytes) {
+    .forEach(bytes => {
       if (bytes) {
         const split = bytes.split('=')
         const name = split.shift()!.replace(/\+/g, ' ')
