@@ -1,11 +1,11 @@
-import { root } from './root'
-import { support } from './support'
-import { Request as RequestPolyfill } from './Request'
-import { Response as ResponsePolyfill } from './Response'
-import { Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill } from './Headers'
-import { BodyInit as BodyInitPolyfill, readArrayBufferAsStream } from './Body'
-import { followAbortSignal } from './AbortController'
-import { ReadableStream } from './stream'
+import {root} from './root'
+import {support} from './support'
+import {Request as RequestPolyfill} from './Request'
+import {Response as ResponsePolyfill} from './Response'
+import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
+import {BodyInit as BodyInitPolyfill, readArrayBufferAsStream} from './Body'
+import {followAbortSignal} from './AbortController'
+import {ReadableStream} from './stream'
 
 const fetch = root.fetch!
 const Request = root.Request!
@@ -29,9 +29,8 @@ function nativeResponseSupportsStream() {
 }
 
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
-  const headers = (headersInit instanceof HeadersPolyfill)
-    ? headersInit
-    : new HeadersPolyfill(headersInit as HeadersInitPolyfill)
+  const headers =
+    headersInit instanceof HeadersPolyfill ? headersInit : new HeadersPolyfill(headersInit as HeadersInitPolyfill)
 
   const list: Array<[string, string]> = []
   headers.forEach((value, key) => list.push([key, value]))
@@ -59,7 +58,7 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
     followAbortSignal(controller, request.signal)
   }
 
-  return bodyPromise.then((bodyInit) => {
+  return bodyPromise.then(bodyInit => {
     return new Request(request.url, {
       body: bodyInit,
       credentials: request.credentials,
@@ -77,7 +76,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   if (support.stream) {
     // Create response from stream
     if (nativeResponseSupportsStream()) {
-      bodyInit = response.body as any as ReadableStream
+      bodyInit = (response.body as any) as ReadableStream
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
@@ -105,7 +104,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
 
 function toPolyfillResponse(response: Response, controller: AbortController): Promise<ResponsePolyfill> {
   // TODO Construct Response from Promise<BodyInit>?
-  return toPolyfillBodyInit(response, controller).then((bodyInit) => {
+  return toPolyfillBodyInit(response, controller).then(bodyInit => {
     return new ResponsePolyfill(bodyInit, response)
   })
 }
@@ -114,5 +113,5 @@ export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill>
   const controller = new AbortController()
   return toNativeRequest(request, controller)
     .then(fetch)
-    .then((response) => toPolyfillResponse(response, controller))
+    .then(response => toPolyfillResponse(response, controller))
 }

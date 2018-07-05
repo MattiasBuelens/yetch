@@ -1,7 +1,7 @@
 const nodeResolve = require('rollup-plugin-node-resolve')
 const commonjs = require('rollup-plugin-commonjs')
 const typescript = require('rollup-plugin-typescript2')
-const { uglify } = require('rollup-plugin-uglify')
+const {uglify} = require('rollup-plugin-uglify')
 
 const plugins = [
   nodeResolve(),
@@ -22,13 +22,16 @@ const plugins = [
 module.exports = [
   {
     input: 'src/index.ts',
-    output: [{
-      file: 'dist/yetch.cjs.js',
-      format: 'cjs'
-    }, {
-      file: 'dist/yetch.mjs',
-      format: 'es'
-    }],
+    output: [
+      {
+        file: 'dist/yetch.cjs.js',
+        format: 'cjs'
+      },
+      {
+        file: 'dist/yetch.mjs',
+        format: 'es'
+      }
+    ],
     plugins
   },
   {
@@ -38,20 +41,20 @@ module.exports = [
       format: 'umd',
       name: 'Yetch'
     },
-    plugins: [
-      ...plugins,
-      uglify()
-    ]
+    plugins: [...plugins, uglify()]
   },
   {
     input: 'src/polyfill.ts',
-    output: [{
-      file: 'dist/yetch-polyfill.cjs.js',
-      format: 'cjs'
-    }, {
-      file: 'dist/yetch-polyfill.mjs',
-      format: 'es'
-    }],
+    output: [
+      {
+        file: 'dist/yetch-polyfill.cjs.js',
+        format: 'cjs'
+      },
+      {
+        file: 'dist/yetch-polyfill.mjs',
+        format: 'es'
+      }
+    ],
     plugins
   },
   {
@@ -61,9 +64,6 @@ module.exports = [
       format: 'umd',
       name: 'Yetch'
     },
-    plugins: [
-      ...plugins,
-      uglify()
-    ]
+    plugins: [...plugins, uglify()]
   }
 ]

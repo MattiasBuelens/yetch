@@ -1,8 +1,8 @@
-import { root } from './root'
+import {root} from './root'
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob#Parameters
-export type BlobPart = ArrayBuffer | ArrayBufferView | Blob | string;
-export type BlobConstructor = (blobParts?: BlobPart[], options?: BlobPropertyBag) => Blob;
+export type BlobPart = ArrayBuffer | ArrayBufferView | Blob | string
+export type BlobConstructor = (blobParts?: BlobPart[], options?: BlobPropertyBag) => Blob
 
 function shimWithBlobClass(): BlobConstructor {
   return (blobParts?, options?) => {
@@ -18,11 +18,11 @@ function shimWithBlobBuilder(BlobBuilderConstructor: typeof MSBlobBuilder): Blob
         builder.append(part)
       }
     }
-    return builder.getBlob(options && options.type || '')
+    return builder.getBlob((options && options.type) || '')
   }
 }
 
-export const createBlob: BlobConstructor = ((() => {
+export const createBlob: BlobConstructor = (() => {
   const Blob = root.Blob
   if (typeof Blob === 'function') {
     try {
@@ -39,4 +39,4 @@ export const createBlob: BlobConstructor = ((() => {
   }
 
   return null!
-})())
+})()

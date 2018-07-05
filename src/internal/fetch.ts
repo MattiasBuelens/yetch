@@ -1,10 +1,10 @@
-import { xhrFetch } from './xhr'
-import { nativeFetch, nativeFetchSupported } from './native'
-import { Request, RequestInit } from './Request'
-import { Response } from './Response'
+import {xhrFetch} from './xhr'
+import {nativeFetch, nativeFetchSupported} from './native'
+import {Request, RequestInit} from './Request'
+import {Response} from './Response'
 
 type FetchImplementation = (request: Request) => Promise<Response>
-const fetchImplementation: FetchImplementation = nativeFetchSupported() ? nativeFetch : xhrFetch;
+const fetchImplementation: FetchImplementation = nativeFetchSupported() ? nativeFetch : xhrFetch
 
 export function fetch(input: Request | string, init?: RequestInit): Promise<Response> {
   return new Promise<Response>(resolve => {
@@ -12,4 +12,4 @@ export function fetch(input: Request | string, init?: RequestInit): Promise<Resp
   })
 }
 
-(fetch as any).polyfill = true
+;(fetch as any).polyfill = true

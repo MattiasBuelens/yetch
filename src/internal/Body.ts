@@ -1,11 +1,11 @@
-import { support } from './support'
-import { Headers } from './Headers'
-import { concatUint8Array, TypedArray } from './util'
-import { ReadableStream } from './stream'
-import { BlobPart, createBlob } from './blob'
+import {support} from './support'
+import {Headers} from './Headers'
+import {concatUint8Array, TypedArray} from './util'
+import {ReadableStream} from './stream'
+import {BlobPart, createBlob} from './blob'
 
-export type BodyInit
-  = Blob
+export type BodyInit =
+  | Blob
   | TypedArray
   | DataView
   | ArrayBuffer
@@ -13,7 +13,7 @@ export type BodyInit
   | URLSearchParams
   | ReadableStream
   | string
-  | null;
+  | null
 
 const viewClasses = [
   '[object Int8Array]',
@@ -47,9 +47,11 @@ const isDataView = function(obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
-const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function(obj) {
-  return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
-}
+const isArrayBufferView: typeof ArrayBuffer.isView =
+  ArrayBuffer.isView ||
+  function(obj) {
+    return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
+  }
 
 const isReadableStream = function(obj: any): obj is ReadableStream {
   return obj && ReadableStream.prototype.isPrototypeOf(obj)
@@ -88,7 +90,7 @@ function readBlobAsText(blob: Blob): Promise<string> {
 }
 
 function createBlobWithType(blobParts: BlobPart[], contentType?: string | null | undefined): Blob {
-  return createBlob(blobParts, { type: contentType || '' })
+  return createBlob(blobParts, {type: contentType || ''})
 }
 
 function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
@@ -98,7 +100,7 @@ function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
   const reader = readable.getReader()
   const chunks: Uint8Array[] = []
-  const pump = ({ done, value }: IteratorResult<Uint8Array>): Promise<Array<Uint8Array>> => {
+  const pump = ({done, value}: IteratorResult<Uint8Array>): Promise<Array<Uint8Array>> => {
     if (done) {
       return Promise.resolve(chunks)
     } else {
@@ -110,11 +112,11 @@ function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
 }
 
 function readStreamAsBlob(readable: ReadableStream, contentType?: string | null | undefined): Promise<Blob> {
-  return readAllChunks(readable).then((chunks) => createBlobWithType(chunks, contentType))
+  return readAllChunks(readable).then(chunks => createBlobWithType(chunks, contentType))
 }
 
 function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
-  return readAllChunks(readable).then((chunks) => concatUint8Array(chunks).buffer)
+  return readAllChunks(readable).then(chunks => concatUint8Array(chunks).buffer)
 }
 
 function readStreamAsText(readable: ReadableStream): Promise<string> {
@@ -122,24 +124,29 @@ function readStreamAsText(readable: ReadableStream): Promise<string> {
   return readStreamAsBlob(readable).then(readBlobAsText)
 }
 
-export function readArrayBufferAsStream(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void): ReadableStream {
+export function readArrayBufferAsStream(
+  pull: () => Promise<ArrayBuffer>,
+  cancel?: (reason: any) => void
+): ReadableStream {
   // TODO use stream polyfill
-  return new ReadableStream({
-    pull(c) {
-      return pull()
-        .then(chunk => {
+  return new ReadableStream(
+    {
+      pull(c) {
+        return pull().then(chunk => {
           c.enqueue(new Uint8Array(chunk))
           c.close()
         })
-    },
-    cancel(reason: any) {
-      if (cancel) {
-        cancel(reason)
+      },
+      cancel(reason: any) {
+        if (cancel) {
+          cancel(reason)
+        }
       }
+    },
+    {
+      highWaterMark: 0 // do not pull immediately
     }
-  }, {
-    highWaterMark: 0 // do not pull immediately
-  })
+  )
 }
 
 function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
@@ -170,14 +177,17 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
 
 function decode(body: string): FormData {
   const form = new FormData()
-  body.trim().split('&').forEach(function(bytes) {
-    if (bytes) {
-      const split = bytes.split('=')
-      const name = split.shift()!.replace(/\+/g, ' ')
-      const value = split.join('=').replace(/\+/g, ' ')
-      form.append(decodeURIComponent(name), decodeURIComponent(value))
-    }
-  })
+  body
+    .trim()
+    .split('&')
+    .forEach(function(bytes) {
+      if (bytes) {
+        const split = bytes.split('=')
+        const name = split.shift()!.replace(/\+/g, ' ')
+        const value = split.join('=').replace(/\+/g, ' ')
+        form.append(decodeURIComponent(name), decodeURIComponent(value))
+      }
+    })
   return form
 }
 
@@ -200,7 +210,6 @@ export function cloneBody(body: Body): BodyInit {
 }
 
 abstract class Body {
-
   body?: ReadableStream | null
   bodyUsed: boolean = false
 
@@ -311,7 +320,6 @@ abstract class Body {
   blob?: () => Promise<Blob>
   arrayBuffer?: () => Promise<ArrayBuffer>
   formData?: () => Promise<FormData>
-
 }
 
 if (support.blob) {
@@ -353,4 +361,4 @@ if (support.formData) {
   }
 }
 
-export { Body }
+export {Body}

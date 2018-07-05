@@ -1,6 +1,6 @@
-import { Headers, HeadersInit } from './Headers'
-import { Body, BodyInit, cloneBody } from './Body'
-import { AbortController, AbortSignal } from './AbortController'
+import {Headers, HeadersInit} from './Headers'
+import {Body, BodyInit, cloneBody} from './Body'
+import {AbortController, AbortSignal} from './AbortController'
 
 export interface RequestInit {
   body?: BodyInit
@@ -17,7 +17,7 @@ const methods: string[] = ['DELETE', 'GET', 'HEAD', 'OPTIONS', 'POST', 'PUT']
 
 function normalizeMethod(method: string): string {
   const upcased = method.toUpperCase()
-  return (methods.indexOf(upcased) > -1) ? upcased : method
+  return methods.indexOf(upcased) > -1 ? upcased : method
 }
 
 function createDefaultAbortSignal(): AbortSignal {
@@ -25,7 +25,6 @@ function createDefaultAbortSignal(): AbortSignal {
 }
 
 class Request extends Body {
-
   credentials: RequestCredentials
   headers: Headers
   method: string
@@ -90,7 +89,6 @@ class Request extends Body {
       body: cloneBody(this)
     })
   }
-
 }
 
-export { Request }
+export {Request}

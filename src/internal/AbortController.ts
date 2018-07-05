@@ -2,7 +2,7 @@ import {
   AbortController as AbortControllerImpl,
   AbortSignal as AbortSignalImpl
 } from 'abortcontroller-polyfill/dist/abortcontroller'
-import { DOMException } from './DOMException'
+import {DOMException} from './DOMException'
 
 type AbortControllerPolyfill = AbortController
 const AbortControllerPolyfill: typeof AbortController = AbortControllerImpl
@@ -10,10 +10,7 @@ const AbortControllerPolyfill: typeof AbortController = AbortControllerImpl
 type AbortSignalPolyfill = AbortSignal
 const AbortSignalPolyfill: typeof AbortSignal = AbortSignalImpl
 
-export {
-  AbortControllerPolyfill as AbortController,
-  AbortSignalPolyfill as AbortSignal
-}
+export {AbortControllerPolyfill as AbortController, AbortSignalPolyfill as AbortSignal}
 
 // https://dom.spec.whatwg.org/#abortsignal-follow
 export function followAbortSignal(followingController: AbortController, parentSignal: AbortSignal): void {

@@ -1,10 +1,9 @@
-import { root } from './root'
+import {root} from './root'
 
-interface DOMException extends Error {
-}
+interface DOMException extends Error {}
 
 export interface DOMExceptionConstructor {
-  new(message?: string, name?: string): DOMException
+  new (message?: string, name?: string): DOMException
 
   prototype: DOMException
 }
@@ -23,4 +22,4 @@ try {
   DOMException.prototype.constructor = DOMException
 }
 
-export { DOMException }
+export {DOMException}

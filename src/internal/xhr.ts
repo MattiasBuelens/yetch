@@ -1,11 +1,11 @@
-import { support } from './support'
-import { Headers } from './Headers'
-import { Request } from './Request'
-import { Response, ResponseInit } from './Response'
-import { BodyInit } from './Body'
-import { createAbortError } from './AbortController'
-import { ReadableStream } from './stream'
-import { ReadableStreamDefaultController } from 'whatwg-streams'
+import {support} from './support'
+import {Headers} from './Headers'
+import {Request} from './Request'
+import {Response, ResponseInit} from './Response'
+import {BodyInit} from './Body'
+import {createAbortError} from './AbortController'
+import {ReadableStream} from './stream'
+import {ReadableStreamDefaultController} from 'whatwg-streams'
 
 function parseHeaders(rawHeaders: string): Headers {
   const headers = new Headers()
@@ -23,7 +23,7 @@ function parseHeaders(rawHeaders: string): Headers {
   return headers
 }
 
-type XhrResponseType = XMLHttpRequestResponseType | 'moz-chunked-arraybuffer';
+type XhrResponseType = XMLHttpRequestResponseType | 'moz-chunked-arraybuffer'
 const mozChunkedArrayBufferType = 'moz-chunked-arraybuffer'
 
 function supportsXhrResponseType(type: XhrResponseType): boolean {
@@ -38,7 +38,6 @@ function supportsXhrResponseType(type: XhrResponseType): boolean {
 }
 
 abstract class XhrBase {
-
   protected readonly _request: Request
   protected readonly _xhr: XMLHttpRequest
   private _responsePromise: Promise<Response>
@@ -72,11 +71,11 @@ abstract class XhrBase {
     }
   }
 
-  protected abstract _getResponseType(): XhrResponseType;
+  protected abstract _getResponseType(): XhrResponseType
 
-  protected abstract _onHeadersReceived(init: ResponseInit): void;
+  protected abstract _onHeadersReceived(init: ResponseInit): void
 
-  protected abstract _onLoad(): void;
+  protected abstract _onLoad(): void
 
   protected _onProgress(): void {
     return
@@ -145,11 +144,9 @@ abstract class XhrBase {
   protected _abort() {
     this._xhr.abort()
   }
-
 }
 
 class Xhr extends XhrBase {
-
   private _responseInit?: ResponseInit = undefined
 
   constructor(request: Request) {
@@ -168,12 +165,10 @@ class Xhr extends XhrBase {
     const body = this._xhr.response || this._xhr.responseText
     this._resolveResponse(new Response(body, this._responseInit!))
   }
-
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType
 class MozChunkedArrayBufferXhr extends XhrBase {
-
   private _responseStream?: ReadableStream = undefined
   private _responseController?: ReadableStreamDefaultController = undefined
   private _responseCancelled: boolean = false
@@ -189,7 +184,7 @@ class MozChunkedArrayBufferXhr extends XhrBase {
   protected _onHeadersReceived(init: ResponseInit): void {
     // TODO use stream polyfill
     this._responseStream = new ReadableStream({
-      start: (c) => {
+      start: c => {
         this._responseController = c
       },
       cancel: () => {
@@ -217,7 +212,6 @@ class MozChunkedArrayBufferXhr extends XhrBase {
       this._responseController.error(error)
     }
   }
-
 }
 
 export function xhrFetch(request: Request): Promise<Response> {
