@@ -277,7 +277,9 @@ abstract class Body {
     }
 
     if (support.stream) {
-      if (this._bodyReadableStream) {
+      if (!body) {
+        this.body = null
+      } else if (this._bodyReadableStream) {
         this.body = this._bodyReadableStream
       } else {
         // TODO attach abort signal to stream
