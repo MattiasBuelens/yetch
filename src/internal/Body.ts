@@ -1,7 +1,7 @@
 import { support } from './support'
 import { Headers } from './Headers'
 import { concatUint8Array, TypedArray } from './util'
-import { ReadableStream, ReadableStreamConstructor } from './stream'
+import { ReadableStream } from './stream'
 import { BlobPart, createBlob } from './blob'
 
 export type BodyInit
@@ -124,7 +124,7 @@ function readStreamAsText(readable: ReadableStream): Promise<string> {
 
 export function readArrayBufferAsStream(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void): ReadableStream {
   // TODO use stream polyfill
-  return new (ReadableStream as any as ReadableStreamConstructor)({
+  return new ReadableStream({
     pull(c) {
       return pull()
         .then(chunk => {

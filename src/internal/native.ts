@@ -5,6 +5,7 @@ import { Response as ResponsePolyfill } from './Response'
 import { Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill } from './Headers'
 import { BodyInit as BodyInitPolyfill, readArrayBufferAsStream } from './Body'
 import { followAbortSignal } from './AbortController'
+import { ReadableStream } from './stream'
 
 const fetch = root.fetch!
 const Request = root.Request!
@@ -76,7 +77,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   if (support.stream) {
     // Create response from stream
     if (nativeResponseSupportsStream()) {
-      bodyInit = response.body
+      bodyInit = response.body as any as ReadableStream
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
