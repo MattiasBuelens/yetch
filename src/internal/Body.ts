@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, TypedArray} from './util'
-import {ReadableStream} from './stream'
+import {convertStream, ReadableStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 
 export type BodyInit =
@@ -253,7 +253,7 @@ abstract class Body {
       // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
       // TODO attach abort signal to stream
       // TODO convert native stream to polyfill stream
-      this._bodyReadableStream = body
+      this._bodyReadableStream = convertStream(body, ReadableStream)
     } else {
       throw new Error('unsupported BodyInit type')
     }
