@@ -3,6 +3,7 @@ const parentConfig = require('./karma.config')
 module.exports = function(config) {
   parentConfig(config)
   config.set({
+    basePath: '../',
     frameworks: ['mocha'],
     files: [
       'test/worker-adapter.js',

@@ -2,7 +2,7 @@ const serverEndpoints = require('./server')
 
 module.exports = function(config) {
   config.set({
-    basePath: '',
+    basePath: '../',
     frameworks: ['mocha', 'chai'],
     client: {
       mocha: {
@@ -14,7 +14,7 @@ module.exports = function(config) {
       'node_modules/abortcontroller-polyfill/dist/abortcontroller-polyfill-only.js',
       'node_modules/url-search-params/build/url-search-params.max.js',
       'dist/yetch-polyfill.js',
-      'test.js'
+      'test/test.js'
     ],
     reporters: process.env.CI ? ['dots'] : ['progress'],
     port: 9876,
