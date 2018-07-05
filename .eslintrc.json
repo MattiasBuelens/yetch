@@ -10,9 +10,7 @@
     "Symbol": true,
     "Uint8Array": true
   },
-  "extends": [
-    "plugin:github/browser"
-  ],
+  "extends": ["plugin:github/browser"],
   "rules": {
     "object-shorthand": "off"
   },

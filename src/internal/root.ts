@@ -10,7 +10,11 @@ declare global {
   }
 }
 
-export const root: typeof window = typeof window === 'object' ?
-  window : typeof self === 'object' ?
-    self : typeof global === 'object' ?
-      global as any : null!
+export const root: typeof window =
+  typeof window === 'object'
+    ? window
+    : typeof self === 'object'
+      ? self
+      : typeof global === 'object'
+        ? (global as any)
+        : null!

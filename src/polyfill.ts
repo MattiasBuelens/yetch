@@ -1,6 +1,6 @@
-import { root } from './internal/root'
-import { AbortController, AbortSignal, fetch, Headers, Request, Response } from './index'
-import { nativeFetchSupported } from './internal/native'
+import {root} from './internal/root'
+import {AbortController, AbortSignal, fetch, Headers, Request, Response} from './index'
+import {nativeFetchSupported} from './internal/native'
 
 export * from './index'
 

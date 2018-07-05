@@ -1,4 +1,4 @@
-import { support } from './support'
+import {support} from './support'
 
 function normalizeName(name: any): string {
   if (typeof name !== 'string') {
@@ -26,7 +26,7 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
   const iterator = {
     next() {
       const value = items.shift()
-      return { done: value === undefined, value: value }
+      return {done: value === undefined, value: value}
     }
   } as IterableIterator<T>
 
@@ -37,11 +37,10 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
   return iterator
 }
 
-export type HeadersInit = Headers | Iterable<[string, string]> | { [name: string]: string }
+export type HeadersInit = Headers | Iterable<[string, string]> | {[name: string]: string}
 
 class Headers implements Iterable<[string, string]> {
-
-  private map: { [name: string]: string }
+  private map: {[name: string]: string}
 
   constructor(headers?: HeadersInit) {
     this.map = {}
@@ -51,15 +50,15 @@ class Headers implements Iterable<[string, string]> {
         this.append(name, value)
       })
     } else if (Array.isArray(headers)) {
-      headers.forEach((header) => {
+      headers.forEach(header => {
         this.append(header[0], header[1])
       })
     } else if (isIterable(headers)) {
-      Array.from(headers).forEach((header) => {
+      Array.from(headers).forEach(header => {
         this.append(header[0], header[1])
       })
     } else if (headers) {
-      Object.getOwnPropertyNames(headers).forEach((name) => {
+      Object.getOwnPropertyNames(headers).forEach(name => {
         this.append(name, headers[name])
       })
     }
@@ -89,8 +88,7 @@ class Headers implements Iterable<[string, string]> {
     this.map[normalizeName(name)] = normalizeValue(value)
   }
 
-  forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any,
-          thisArg?: any): void {
+  forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any, thisArg?: any): void {
     for (const name in this.map) {
       if (this.map.hasOwnProperty(name)) {
         callback.call(thisArg, this.map[name], name, this)
@@ -123,11 +121,10 @@ class Headers implements Iterable<[string, string]> {
   }
 
   [Symbol.iterator]: () => Iterator<[string, string]>
-
 }
 
 if (support.iterable) {
   Headers.prototype[Symbol.iterator] = Headers.prototype.entries
 }
 
-export { Headers }
+export {Headers}

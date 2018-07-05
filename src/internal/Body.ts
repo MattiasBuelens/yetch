@@ -1,8 +1,8 @@
-import { support } from './support'
-import { Headers } from './Headers'
+import {support} from './support'
+import {Headers} from './Headers'
 
-export type TypedArray
-  = Int8Array
+export type TypedArray =
+  | Int8Array
   | Int16Array
   | Int32Array
   | Uint8Array
@@ -12,7 +12,7 @@ export type TypedArray
   | Float32Array
   | Float64Array
 
-export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | URLSearchParams | string | null;
+export type BodyInit = Blob | TypedArray | DataView | ArrayBuffer | FormData | URLSearchParams | string | null
 
 const viewClasses = [
   '[object Int8Array]',
@@ -46,9 +46,11 @@ const isDataView = function(obj: any): obj is DataView {
   return obj && DataView.prototype.isPrototypeOf(obj)
 }
 
-const isArrayBufferView: typeof ArrayBuffer.isView = ArrayBuffer.isView || function(obj) {
-  return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
-}
+const isArrayBufferView: typeof ArrayBuffer.isView =
+  ArrayBuffer.isView ||
+  function(obj) {
+    return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
+  }
 
 function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
@@ -120,19 +122,21 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
 
 function decode(body: string): FormData {
   const form = new FormData()
-  body.trim().split('&').forEach(function(bytes) {
-    if (bytes) {
-      const split = bytes.split('=')
-      const name = split.shift()!.replace(/\+/g, ' ')
-      const value = split.join('=').replace(/\+/g, ' ')
-      form.append(decodeURIComponent(name), decodeURIComponent(value))
-    }
-  })
+  body
+    .trim()
+    .split('&')
+    .forEach(function(bytes) {
+      if (bytes) {
+        const split = bytes.split('=')
+        const name = split.shift()!.replace(/\+/g, ' ')
+        const value = split.join('=').replace(/\+/g, ' ')
+        form.append(decodeURIComponent(name), decodeURIComponent(value))
+      }
+    })
   return form
 }
 
 abstract class Body {
-
   bodyUsed: boolean = false
   abstract headers: Headers
 
@@ -205,7 +209,6 @@ abstract class Body {
   blob?: () => Promise<Blob>
   arrayBuffer?: () => Promise<ArrayBuffer>
   formData?: () => Promise<FormData>
-
 }
 
 if (support.blob) {
@@ -241,4 +244,4 @@ if (support.formData) {
   }
 }
 
-export { Body }
+export {Body}

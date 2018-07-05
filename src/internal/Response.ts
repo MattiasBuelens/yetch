@@ -1,5 +1,5 @@
-import { Headers, HeadersInit } from './Headers'
-import { Body, BodyInit } from './Body'
+import {Headers, HeadersInit} from './Headers'
+import {Body, BodyInit} from './Body'
 
 const redirectStatuses = [301, 302, 303, 307, 308]
 
@@ -11,7 +11,6 @@ export interface ResponseInit {
 }
 
 class Response extends Body {
-
   headers: Headers
   ok: boolean
   status: number
@@ -44,7 +43,7 @@ class Response extends Body {
   }
 
   static error(): Response {
-    const response = new Response(null, { status: 0, statusText: '' })
+    const response = new Response(null, {status: 0, statusText: ''})
     response.type = 'error'
     return response
   }
@@ -54,9 +53,8 @@ class Response extends Body {
       throw new RangeError('Invalid status code')
     }
 
-    return new Response(null, { status: status, headers: { location: url } })
+    return new Response(null, {status: status, headers: {location: url}})
   }
-
 }
 
-export { Response }
+export {Response}

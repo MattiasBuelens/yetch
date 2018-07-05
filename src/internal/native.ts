@@ -1,8 +1,8 @@
-import { root } from './root'
-import { Request as RequestPolyfill, RequestInit as RequestInitPolyfill } from './Request'
-import { Response as ResponsePolyfill } from './Response'
-import { Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill } from './Headers'
-import { followAbortSignal } from './AbortController'
+import {root} from './root'
+import {Request as RequestPolyfill, RequestInit as RequestInitPolyfill} from './Request'
+import {Response as ResponsePolyfill} from './Response'
+import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
+import {followAbortSignal} from './AbortController'
 
 const fetch = root.fetch!
 const Request = root.Request!
@@ -18,9 +18,8 @@ function nativeFetchSupportsAbort() {
 }
 
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
-  const headers = (headersInit instanceof HeadersPolyfill)
-    ? headersInit
-    : new HeadersPolyfill(headersInit as HeadersInitPolyfill)
+  const headers =
+    headersInit instanceof HeadersPolyfill ? headersInit : new HeadersPolyfill(headersInit as HeadersInitPolyfill)
 
   const list: Array<[string, string]> = []
   headers.forEach((value, key) => list.push([key, value]))
@@ -64,13 +63,12 @@ function toNativeRequestInit(init?: RequestInitPolyfill): RequestInit {
 }
 
 export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
-    let nativeInput: Request | string = (input instanceof RequestPolyfill) ? toNativeRequest(input) : input
-    let nativeInit: RequestInit = toNativeRequestInit(init)
-    return fetch(nativeInput, nativeInit)
-      .then((response) => {
-        // TODO Use ReadableStream as body init
-        return response.arrayBuffer().then(arrayBuffer => {
-          return new ResponsePolyfill(arrayBuffer, response)
-        })
-      })
+  let nativeInput: Request | string = input instanceof RequestPolyfill ? toNativeRequest(input) : input
+  let nativeInit: RequestInit = toNativeRequestInit(init)
+  return fetch(nativeInput, nativeInit).then(response => {
+    // TODO Use ReadableStream as body init
+    return response.arrayBuffer().then(arrayBuffer => {
+      return new ResponsePolyfill(arrayBuffer, response)
+    })
+  })
 }

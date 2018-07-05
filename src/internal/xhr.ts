@@ -1,8 +1,8 @@
-import { support } from './support'
-import { DOMException } from './DOMException'
-import { Headers } from './Headers'
-import { Request, RequestInit } from './Request'
-import { Response, ResponseInit } from './Response'
+import {support} from './support'
+import {DOMException} from './DOMException'
+import {Headers} from './Headers'
+import {Request, RequestInit} from './Request'
+import {Response, ResponseInit} from './Response'
 
 function parseHeaders(rawHeaders: string): Headers {
   const headers = new Headers()
@@ -60,7 +60,7 @@ export function xhrFetch(input: Request | string, init?: RequestInit): Promise<R
 
     xhr.open(request.method, request.url, true)
 
-    xhr.withCredentials = (request.credentials === 'include')
+    xhr.withCredentials = request.credentials === 'include'
 
     if ('responseType' in xhr && support.blob) {
       xhr.responseType = 'blob'
