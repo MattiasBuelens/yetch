@@ -103,7 +103,7 @@ abstract class XhrBase {
     const abortXhr = () => this._abort()
 
     if (request.signal.aborted) {
-      return this._onAbort();
+      return this._onAbort()
     }
 
     xhr.onreadystatechange = () => {
