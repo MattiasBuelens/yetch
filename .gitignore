@@ -15,5 +15,5 @@ node_modules/
 sauce_connect/
 sauce_connect.log
 .rpt2_cache/
-cjs/
 dist/
+types/

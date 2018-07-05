@@ -2,9 +2,8 @@
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
-    "outDir": "../cjs",
     "declaration": true,
-    "declarationDir": "../cjs",
+    "declarationDir": "../types",
     "lib": ["es5", "es2015.symbol", "es2015.iterable", "es2015.promise", "dom", "dom.iterable"],
     "strict": true,
     "esModuleInterop": true,
