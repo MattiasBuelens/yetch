@@ -8,6 +8,7 @@
   "repository": "https://github.com/Netflix/yetch",
   "license": "MIT",
   "dependencies": {
+    "@types/whatwg-streams": "^0.0.6",
     "tslib": "^1.9.1"
   },
   "devDependencies": {
