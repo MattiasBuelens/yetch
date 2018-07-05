@@ -55,7 +55,7 @@ abstract class XhrBase {
   }
 
   send(): Promise<Response> {
-    return Promise.resolve(this._readBody()).then(body => {
+    return this._readBody().then(body => {
       this._send(body, this._getResponseType())
       return this._responsePromise
     })
