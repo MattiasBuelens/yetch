@@ -102,6 +102,10 @@ abstract class XhrBase {
     const xhr = this._xhr
     const abortXhr = () => this._abort()
 
+    if (request.signal.aborted) {
+      return this._onAbort();
+    }
+
     xhr.onreadystatechange = () => {
       if (xhr.readyState === xhr.HEADERS_RECEIVED) {
         const headers = parseHeaders(xhr.getAllResponseHeaders() || '')
