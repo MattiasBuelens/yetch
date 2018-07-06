@@ -187,7 +187,6 @@ class MozChunkedArrayBufferXhr extends XhrBase {
   }
 
   protected _onHeadersReceived(init: ResponseInit): void {
-    // TODO use stream polyfill
     this._responseStream = new GlobalReadableStream({
       start: c => {
         this._responseController = c

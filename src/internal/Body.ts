@@ -125,7 +125,6 @@ export function readArrayBufferAsStream(
   pull: () => Promise<ArrayBuffer>,
   cancel?: (reason: any) => void
 ): ReadableStream {
-  // TODO use stream polyfill
   return new GlobalReadableStream(
     {
       pull(c) {
