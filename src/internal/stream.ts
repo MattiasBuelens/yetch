@@ -77,21 +77,21 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
 }
 
 export function convertStream<R, T extends ReadableStream<R>>(
-  clazz: ReadableStreamConstructor<T>,
+  ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream<R>
 ): T & ReadableStream<R> {
-  if (stream.constructor === clazz) {
+  if (stream.constructor === ctor) {
     return stream as any
   }
-  return new clazz(new ReaderSource(stream.getReader()), {highWaterMark: 0})
+  return new ctor(new ReaderSource(stream.getReader()), {highWaterMark: 0})
 }
 
 export function transferStream<R, T extends ReadableStream<R>>(
-  clazz: ReadableStreamConstructor<T>,
+  ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream<R>,
   onDisturbed: () => void
 ): T & ReadableStream<R> {
-  return new clazz(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
+  return new ctor(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
 }
 
 class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {
@@ -118,11 +118,11 @@ class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {
 }
 
 export function readArrayBufferAsStream<T extends ReadableStream>(
-  clazz: ReadableStreamConstructor<T>,
+  ctor: ReadableStreamConstructor<T>,
   pull: () => Promise<ArrayBuffer>,
   cancel?: (reason: any) => void
 ): T & ReadableStream {
-  return new clazz(new ArrayBufferSource(pull, cancel), {
+  return new ctor(new ArrayBufferSource(pull, cancel), {
     highWaterMark: 0 // do not pull immediately
   })
 }
