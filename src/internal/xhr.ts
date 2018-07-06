@@ -120,6 +120,7 @@ abstract class XhrBase {
       }
     }
 
+    xhr.onprogress = () => this._onProgress()
     xhr.onload = () => this._onLoad()
     xhr.onerror = () => this._onError()
     xhr.ontimeout = () => this._onTimeout()
