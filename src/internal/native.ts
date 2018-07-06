@@ -14,24 +14,12 @@ const Response = root.Response!
 const AbortController = root.AbortController!
 
 export function nativeFetchSupported() {
-  return !!fetch && nativeFetchSupportsAbort() && nativeResponseSupportsStream()
-}
-
-function nativeFetchSupportsAbort() {
-  return support.abort
-}
-
-function nativeRequestSupportsStream() {
-  return support.streamRequest
-}
-
-function nativeResponseSupportsStream() {
-  return support.streamResponse
+  return !!fetch && support.abort && support.streamResponse
 }
 
 // The ReadableStream class used by native fetch
 // May differ from the global ReadableStream class
-const NativeReadableStream: ReadableStreamConstructor | undefined = nativeResponseSupportsStream()
+const NativeReadableStream: ReadableStreamConstructor | undefined = support.streamResponse
   ? (new Response('').body!.constructor as any)
   : undefined
 
@@ -47,7 +35,7 @@ function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<
 function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
   let bodyPromise: Promise<BodyInit>
   if (request._bodyReadableStream) {
-    if (nativeRequestSupportsStream()) {
+    if (support.streamRequest) {
       // Body is a stream, and native supports uploading a stream
       bodyPromise = Promise.resolve(convertStream(NativeReadableStream!, request._bodyReadableStream))
     } else {
@@ -81,7 +69,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   let bodyInit: BodyInitPolyfill
   if (support.stream) {
     // Create response from stream
-    if (nativeResponseSupportsStream()) {
+    if (support.streamResponse) {
       // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
       const nativeBody = (response.body as any) as ReadableStream | null
       bodyInit = nativeBody && convertStream(GlobalReadableStream, nativeBody)
