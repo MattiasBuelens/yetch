@@ -314,7 +314,7 @@ export class Body {
     } else if (this._bodyReadableStream) {
       return readStreamAsText(this._bodyReadableStream)
     } else if (this._bodyPromise) {
-      return consumed(this) || this._bodyPromise.then(body => body.text())
+      return this._bodyPromise.then(body => body.text())
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as text'))
     } else {
@@ -345,7 +345,7 @@ if (support.blob) {
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream, this._bodyMimeType)
     } else if (this._bodyPromise) {
-      return consumed(this) || this._bodyPromise.then(body => body.blob!())
+      return this._bodyPromise.then(body => body.blob!())
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
