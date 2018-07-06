@@ -3,7 +3,7 @@ import {support} from './support'
 import {Request as RequestPolyfill} from './Request'
 import {InternalResponse, Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
-import {BodyInit as BodyInitPolyfill} from './Body'
+import {InternalBodyInit} from './Body'
 import {followAbortSignal} from './AbortController'
 import {convertStream, ReadableStream, ReadableStreamConstructor, readArrayBufferAsStream} from './stream'
 import {GlobalReadableStream} from './globals'
@@ -66,11 +66,12 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
   })
 }
 
-function toPolyfillBodyInit(response: Response, controller: AbortController): Promise<BodyInitPolyfill> {
-  let bodyInit: BodyInitPolyfill
+function toPolyfillBodyInit(response: Response, controller: AbortController): InternalBodyInit {
   if (support.stream) {
-    // Create response from stream
+    // Return a streaming response
+    let bodyInit: ReadableStream | null
     if (support.streamResponse) {
+      // Read response as stream
       // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
       const nativeBody = (response.body as any) as ReadableStream | null
       bodyInit = nativeBody && convertStream(GlobalReadableStream, nativeBody)
@@ -86,7 +87,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
         }
       )
     }
-    return Promise.resolve(bodyInit)
+    return bodyInit
   } else {
     // Streams are not supported
     // Return a promise that reads the entire response

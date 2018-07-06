@@ -1,5 +1,5 @@
 import {Headers, HeadersInit} from './Headers'
-import {Body, BodyInit, cloneBody} from './Body'
+import {Body, BodyInit, cloneBody, InternalBodyInit} from './Body'
 
 const redirectStatuses = [301, 302, 303, 307, 308]
 
@@ -56,12 +56,12 @@ export class Response extends Body {
 
 /*
  * When streams are not supported, we still want to create a `Response` object as soon as the headers are received.
- * This means that we have to construct a `Response` with a `Promise<BodyInit>` as body argument.
+ * This means that we have to construct a `Response` with a `PromiseLike<BodyInit>` as body argument.
  *
  * While the underlying `Body` class does support it, we want to hide this from the generated type definitions.
  * Therefore, we use the following interface with the "real" constructor type and add a type cast where necessary.
  */
 /** @internal */
 export interface InternalResponse {
-  new (bodyInit?: BodyInit | Promise<BodyInit>, options?: ResponseInit): Response
+  new (bodyInit?: InternalBodyInit, options?: ResponseInit): Response
 }
