@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {Request} from './Request'
-import {Response, ResponseInit} from './Response'
+import {InternalResponse, Response, ResponseInit} from './Response'
 import {BodyInit} from './Body'
 import {createAbortError} from './AbortController'
 import {ReadableStream} from './stream'
@@ -152,7 +152,9 @@ abstract class XhrBase {
 }
 
 class Xhr extends XhrBase {
-  private _responseInit?: ResponseInit = undefined
+  private _bodyPromise?: Promise<BodyInit> = undefined
+  private _resolveBody?: (body: BodyInit) => void = undefined
+  private _rejectBody?: (reason: any) => void
 
   constructor(request: Request) {
     super(request)
@@ -163,12 +165,23 @@ class Xhr extends XhrBase {
   }
 
   protected _onHeadersReceived(init: ResponseInit): void {
-    this._responseInit = init
+    this._bodyPromise = new Promise<BodyInit>((resolve, reject) => {
+      this._resolveBody = resolve
+      this._rejectBody = resolve
+    })
+    this._resolveResponse(new (Response as InternalResponse)(this._bodyPromise, init))
   }
 
   protected _onLoad(): void {
     const body = this._xhr.response || this._xhr.responseText
-    this._resolveResponse(new Response(body, this._responseInit!))
+    this._resolveBody!(body)
+  }
+
+  protected _handleError(error: Error): void {
+    super._handleError(error)
+    if (this._rejectBody) {
+      this._rejectBody!(error)
+    }
   }
 }
 

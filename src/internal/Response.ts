@@ -10,7 +10,7 @@ export interface ResponseInit {
   url?: string | null
 }
 
-class Response extends Body {
+export class Response extends Body {
   headers: Headers
   ok: boolean
   status: number
@@ -31,7 +31,7 @@ class Response extends Body {
   }
 
   clone(): Response {
-    return new Response(cloneBody(this), {
+    return new Response(cloneBody(this) as BodyInit, {
       status: this.status,
       statusText: this.statusText,
       headers: new Headers(this.headers),
@@ -54,4 +54,14 @@ class Response extends Body {
   }
 }
 
-export {Response}
+/*
+ * When streams are not supported, we still want to create a `Response` object as soon as the headers are received.
+ * This means that we have to construct a `Response` with a `Promise<BodyInit>` as body argument.
+ *
+ * While the underlying `Body` class does support it, we want to hide this from the generated type definitions.
+ * Therefore, we use the following interface with the "real" constructor type and add a type cast where necessary.
+ */
+/** @internal */
+export interface InternalResponse {
+  new (bodyInit?: BodyInit | Promise<BodyInit>, options?: ResponseInit): Response
+}
