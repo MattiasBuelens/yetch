@@ -8,7 +8,7 @@ import {
 
 export type ReadableStream<R = Uint8Array> = WhatWGReadableStream<R>
 
-export interface ReadableStreamConstructor<T extends ReadableStream<any>> {
+export interface ReadableStreamConstructor<T extends ReadableStream<any> = ReadableStream<any>> {
   new <R>(underlyingSource?: ReadableStreamSource<R>, strategy?: QueuingStrategy<R>): T & ReadableStream<R>
 }
 

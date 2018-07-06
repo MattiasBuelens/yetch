@@ -253,7 +253,6 @@ abstract class Body {
       // TODO transfer stream
       // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
       // TODO attach abort signal to stream
-      // TODO convert native stream to polyfill stream
       this._bodyReadableStream = convertStream(body, GlobalReadableStream)
     } else {
       throw new Error('unsupported BodyInit type')
