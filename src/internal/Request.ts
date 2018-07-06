@@ -1,5 +1,5 @@
 import {Headers, HeadersInit} from './Headers'
-import {Body, BodyInit, cloneBody} from './Body'
+import {Body, BodyInit, cloneBody, InternalBodyInit} from './Body'
 import {AbortController, AbortSignal} from './AbortController'
 
 export interface RequestInit {
@@ -36,7 +36,7 @@ export class Request extends Body {
   constructor(input: Request | string, options?: RequestInit) {
     options = options || {}
     let url: string
-    let body: BodyInit = options.body || null
+    let body: InternalBodyInit = options.body || null
     let credentials: RequestCredentials | undefined
     let headers: Headers | undefined
     let method: string
@@ -86,7 +86,7 @@ export class Request extends Body {
 
   clone() {
     return new Request(this, {
-      body: cloneBody(this)
+      body: cloneBody(this) as BodyInit
     })
   }
 }

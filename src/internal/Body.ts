@@ -54,6 +54,10 @@ const isArrayBufferView: typeof ArrayBuffer.isView =
     return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
   }
 
+function isPromiseLike<T>(obj: any): obj is PromiseLike<T> {
+  return obj && typeof obj.then === 'function'
+}
+
 function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
     return Promise.reject(new TypeError('Already used'))
@@ -187,7 +191,11 @@ function decode(body: string): FormData {
   return form
 }
 
-export function cloneBody(body: Body): BodyInit {
+/** @internal */
+export type InternalBodyInit = BodyInit | PromiseLike<BodyInit>
+
+/** @internal */
+export function cloneBody(body: Body): InternalBodyInit {
   if (body.bodyUsed) {
     throw new TypeError('Already used')
   }
@@ -201,18 +209,18 @@ export function cloneBody(body: Body): BodyInit {
     body._bodyReadableStream = stream1
     return stream2
   } else {
-    return body._bodyInit
+    return body._bodyInit as BodyInit
   }
 }
 
-export abstract class Body {
+export class Body {
   body?: ReadableStream | null
   bodyUsed: boolean = false
 
   /** @internal */
   _bodyMimeType: string
   /** @internal */
-  _bodyInit!: BodyInit
+  _bodyInit!: InternalBodyInit
   /** @internal */
   _bodyText?: string
   /** @internal */
@@ -223,15 +231,19 @@ export abstract class Body {
   _bodyArrayBuffer?: ArrayBuffer
   /** @internal */
   _bodyReadableStream?: ReadableStream
+  /** @internal */
+  _bodyPromise?: Promise<Body>
 
   /** @internal */
-  protected constructor(body: BodyInit, headers: Headers) {
+  protected constructor(body: InternalBodyInit, headers: Headers) {
     this._bodyInit = body || null
 
     if (!body) {
       this._bodyText = ''
     } else if (typeof body === 'string') {
       this._bodyText = body
+    } else if (isPromiseLike<BodyInit>(body)) {
+      this._bodyPromise = Promise.resolve(body).then(bodyInit => new Body(bodyInit, headers))
     } else if (support.blob && isBlob(body)) {
       this._bodyBlob = body
     } else if (support.formData && isFormData(body)) {
@@ -301,6 +313,8 @@ export abstract class Body {
       return readArrayBufferAsText(this._bodyArrayBuffer)
     } else if (this._bodyReadableStream) {
       return readStreamAsText(this._bodyReadableStream)
+    } else if (this._bodyPromise) {
+      return consumed(this) || this._bodyPromise.then(body => body.text())
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as text'))
     } else {
@@ -330,6 +344,8 @@ if (support.blob) {
       return Promise.resolve(createBlobWithType([this._bodyArrayBuffer], this._bodyMimeType))
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream, this._bodyMimeType)
+    } else if (this._bodyPromise) {
+      return consumed(this) || this._bodyPromise.then(body => body.blob!())
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
@@ -342,6 +358,8 @@ if (support.blob) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
     } else if (this._bodyReadableStream) {
       return readStreamAsArrayBuffer(this._bodyReadableStream)
+    } else if (this._bodyPromise) {
+      return consumed(this) || this._bodyPromise.then(body => body.arrayBuffer!())
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as ArrayBuffer'))
     } else {
