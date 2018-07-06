@@ -24,7 +24,7 @@ function createDefaultAbortSignal(): AbortSignal {
   return new AbortController().signal
 }
 
-class Request extends Body {
+export class Request extends Body {
   credentials: RequestCredentials
   headers: Headers
   method: string
@@ -90,5 +90,3 @@ class Request extends Body {
     })
   }
 }
-
-export {Request}

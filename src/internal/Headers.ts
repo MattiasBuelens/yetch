@@ -39,7 +39,7 @@ function iteratorFor<T>(items: T[]): IterableIterator<T> {
 
 export type HeadersInit = Headers | Iterable<[string, string]> | {[name: string]: string}
 
-class Headers implements Iterable<[string, string]> {
+export class Headers implements Iterable<[string, string]> {
   private map: {[name: string]: string}
 
   constructor(headers?: HeadersInit) {
@@ -126,5 +126,3 @@ class Headers implements Iterable<[string, string]> {
 if (support.iterable) {
   Headers.prototype[Symbol.iterator] = Headers.prototype.entries
 }
-
-export {Headers}

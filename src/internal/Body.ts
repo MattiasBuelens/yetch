@@ -205,7 +205,7 @@ export function cloneBody(body: Body): BodyInit {
   }
 }
 
-abstract class Body {
+export abstract class Body {
   body?: ReadableStream | null
   bodyUsed: boolean = false
 
@@ -355,5 +355,3 @@ if (support.formData) {
     return this.text().then(decode)
   }
 }
-
-export {Body}

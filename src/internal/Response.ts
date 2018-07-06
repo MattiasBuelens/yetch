@@ -10,7 +10,7 @@ export interface ResponseInit {
   url?: string | null
 }
 
-class Response extends Body {
+export class Response extends Body {
   headers: Headers
   ok: boolean
   status: number
@@ -53,5 +53,3 @@ class Response extends Body {
     return new Response(null, {status: status, headers: {location: url}})
   }
 }
-
-export {Response}
