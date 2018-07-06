@@ -1,3 +1,4 @@
+/** @internal */
 export type TypedArray =
   | Int8Array
   | Int16Array
@@ -9,6 +10,7 @@ export type TypedArray =
   | Float32Array
   | Float64Array
 
+/** @internal */
 export function concatUint8Array(arrays: TypedArray[]): Uint8Array {
   let totalLength = 0
   for (let array of arrays) {

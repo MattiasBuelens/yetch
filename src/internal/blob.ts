@@ -1,7 +1,9 @@
 import {root} from './root'
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob#Parameters
+/** @internal */
 export type BlobPart = ArrayBuffer | ArrayBufferView | Blob | string
+/** @internal */
 export type BlobConstructor = (blobParts?: BlobPart[], options?: BlobPropertyBag) => Blob
 
 function shimWithBlobClass(): BlobConstructor {
@@ -22,6 +24,7 @@ function shimWithBlobBuilder(BlobBuilderConstructor: typeof MSBlobBuilder): Blob
   }
 }
 
+/** @internal */
 export const createBlob: BlobConstructor = (() => {
   const Blob = root.Blob
   if (typeof Blob === 'function') {

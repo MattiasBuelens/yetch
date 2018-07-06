@@ -12,10 +12,12 @@ export interface ReadableStreamConstructor<T extends ReadableStream<any> = Reada
   new <R>(underlyingSource?: ReadableStreamSource<R>, strategy?: QueuingStrategy<R>): T & ReadableStream<R>
 }
 
+/** @internal */
 export function isReadableStream<T = Uint8Array>(stream: any): stream is ReadableStream<T> {
   return stream && typeof (stream as ReadableStream).getReader === 'function'
 }
 
+/** @internal */
 export function isReadableStreamConstructor(ctor: any): ctor is ReadableStreamConstructor {
   if (typeof ctor !== 'function') {
     return false
@@ -76,6 +78,7 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
   }
 }
 
+/** @internal */
 export function convertStream<R, T extends ReadableStream<R>>(
   ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream<R>
@@ -86,6 +89,7 @@ export function convertStream<R, T extends ReadableStream<R>>(
   return new ctor(new ReaderSource(stream.getReader()), {highWaterMark: 0})
 }
 
+/** @internal */
 export function transferStream<R, T extends ReadableStream<R>>(
   ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream<R>,
@@ -117,6 +121,7 @@ class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {
   }
 }
 
+/** @internal */
 export function readArrayBufferAsStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
   pull: () => Promise<ArrayBuffer>,

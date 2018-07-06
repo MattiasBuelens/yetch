@@ -1,3 +1,4 @@
+/** @internal */
 declare global {
   interface Window {
     fetch: typeof fetch
@@ -18,6 +19,7 @@ declare global {
   }
 }
 
+/** @internal */
 export const root: typeof window =
   typeof window === 'object'
     ? window

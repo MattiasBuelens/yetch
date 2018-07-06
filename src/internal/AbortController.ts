@@ -13,6 +13,7 @@ const AbortSignalPolyfill: typeof AbortSignal = AbortSignalImpl
 export {AbortControllerPolyfill as AbortController, AbortSignalPolyfill as AbortSignal}
 
 // https://dom.spec.whatwg.org/#abortsignal-follow
+/** @internal */
 export function followAbortSignal(followingController: AbortController, parentSignal: AbortSignal): void {
   // 1. If followingSignal's aborted flag is set, then return.
   if (followingController.signal.aborted) {
@@ -35,6 +36,7 @@ export function followAbortSignal(followingController: AbortController, parentSi
   }
 }
 
+/** @internal */
 export function createAbortError(): DOMException {
   return new DOMException('Aborted', 'AbortError')
 }
