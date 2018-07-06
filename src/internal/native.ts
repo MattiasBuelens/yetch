@@ -49,7 +49,7 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
   if (request._bodyReadableStream) {
     if (nativeRequestSupportsStream()) {
       // Body is a stream, and native supports uploading a stream
-      bodyPromise = Promise.resolve(convertStream(request._bodyReadableStream, NativeReadableStream!))
+      bodyPromise = Promise.resolve(convertStream(NativeReadableStream!, request._bodyReadableStream))
     } else {
       // Body is a stream, but native doesn't support uploading a stream
       // Upload as array buffer instead
@@ -84,7 +84,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
     if (nativeResponseSupportsStream()) {
       // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
       const nativeBody = (response.body as any) as ReadableStream | null
-      bodyInit = nativeBody && convertStream(nativeBody, GlobalReadableStream)
+      bodyInit = nativeBody && convertStream(GlobalReadableStream, nativeBody)
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead

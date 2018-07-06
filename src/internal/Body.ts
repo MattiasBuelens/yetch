@@ -233,7 +233,7 @@ export class Body {
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
-      this._bodyReadableStream = transferStream(body, GlobalReadableStream, () => {
+      this._bodyReadableStream = transferStream(GlobalReadableStream, body, () => {
         // set bodyUsed to true when stream becomes disturbed (read or canceled)
         this.bodyUsed = true
       })

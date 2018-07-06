@@ -77,8 +77,8 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
 }
 
 export function convertStream<R, T extends ReadableStream<R>>(
-  stream: ReadableStream<R>,
-  clazz: ReadableStreamConstructor<T>
+  clazz: ReadableStreamConstructor<T>,
+  stream: ReadableStream<R>
 ): T & ReadableStream<R> {
   if (stream.constructor === clazz) {
     return stream as any
@@ -87,8 +87,8 @@ export function convertStream<R, T extends ReadableStream<R>>(
 }
 
 export function transferStream<R, T extends ReadableStream<R>>(
-  stream: ReadableStream<R>,
   clazz: ReadableStreamConstructor<T>,
+  stream: ReadableStream<R>,
   onDisturbed: () => void
 ): T & ReadableStream<R> {
   return new clazz(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
