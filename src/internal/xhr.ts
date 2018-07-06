@@ -6,6 +6,7 @@ import {BodyInit} from './Body'
 import {createAbortError} from './AbortController'
 import {ReadableStream} from './stream'
 import {ReadableStreamDefaultController} from 'whatwg-streams'
+import {GlobalReadableStream} from './globals'
 
 function parseHeaders(rawHeaders: string): Headers {
   const headers = new Headers()
@@ -187,7 +188,7 @@ class MozChunkedArrayBufferXhr extends XhrBase {
 
   protected _onHeadersReceived(init: ResponseInit): void {
     // TODO use stream polyfill
-    this._responseStream = new ReadableStream({
+    this._responseStream = new GlobalReadableStream({
       start: c => {
         this._responseController = c
       },

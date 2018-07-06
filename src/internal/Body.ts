@@ -3,6 +3,7 @@ import {Headers} from './Headers'
 import {concatUint8Array, TypedArray} from './util'
 import {convertStream, ReadableStream} from './stream'
 import {BlobPart, createBlob} from './blob'
+import {GlobalReadableStream} from './globals'
 
 export type BodyInit =
   | Blob
@@ -54,7 +55,7 @@ const isArrayBufferView: typeof ArrayBuffer.isView =
   }
 
 function isReadableStream(obj: any): obj is ReadableStream {
-  return obj && ReadableStream.prototype.isPrototypeOf(obj)
+  return obj && GlobalReadableStream.prototype.isPrototypeOf(obj)
 }
 
 function consumed(body: Body): Promise<never> | undefined {
@@ -129,7 +130,7 @@ export function readArrayBufferAsStream(
   cancel?: (reason: any) => void
 ): ReadableStream {
   // TODO use stream polyfill
-  return new ReadableStream(
+  return new GlobalReadableStream(
     {
       pull(c) {
         return pull().then(chunk => {
@@ -253,7 +254,7 @@ abstract class Body {
       // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
       // TODO attach abort signal to stream
       // TODO convert native stream to polyfill stream
-      this._bodyReadableStream = convertStream(body, ReadableStream)
+      this._bodyReadableStream = convertStream(body, GlobalReadableStream)
     } else {
       throw new Error('unsupported BodyInit type')
     }

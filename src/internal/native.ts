@@ -5,7 +5,8 @@ import {Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
 import {BodyInit as BodyInitPolyfill, readArrayBufferAsStream} from './Body'
 import {followAbortSignal} from './AbortController'
-import {convertStream, ReadableStream} from './stream'
+import {convertStream} from './stream'
+import {GlobalReadableStream} from './globals'
 
 const fetch = root.fetch!
 const Request = root.Request!
@@ -43,7 +44,7 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
     if (nativeRequestSupportsStream()) {
       // Body is a stream, and native supports uploading a stream
       // TODO convert polyfill stream to native stream
-      bodyPromise = Promise.resolve(convertStream(request._bodyReadableStream, ReadableStream))
+      bodyPromise = Promise.resolve(convertStream(request._bodyReadableStream, GlobalReadableStream))
     } else {
       // Body is a stream, but native doesn't support uploading a stream
       // Upload as array buffer instead
@@ -76,7 +77,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   if (support.stream) {
     // Create response from stream
     if (nativeResponseSupportsStream()) {
-      bodyInit = (response.body as any) as ReadableStream
+      bodyInit = (response.body as any) as GlobalReadableStream
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead

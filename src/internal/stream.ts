@@ -1,13 +1,16 @@
 import {
+  QueuingStrategy,
   ReadableStream as WhatWGReadableStream,
   ReadableStreamDefaultController,
   ReadableStreamDefaultReader,
   ReadableStreamSource
 } from 'whatwg-streams'
-import {root} from './root'
 
 export type ReadableStream<R = Uint8Array> = WhatWGReadableStream<R>
-export const ReadableStream: typeof WhatWGReadableStream = root.ReadableStream! as any
+
+export interface ReadableStreamConstructor<T extends ReadableStream<any>> {
+  new <R>(underlyingSource?: ReadableStreamSource<R>, strategy?: QueuingStrategy<R>): T & ReadableStream<R>
+}
 
 class ReaderSource<R> implements ReadableStreamSource<R> {
   private readonly _reader: ReadableStreamDefaultReader<R>
@@ -31,9 +34,12 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
   }
 }
 
-export function convertStream<R>(stream: ReadableStream<R>, clazz: typeof ReadableStream): ReadableStream<R> {
+export function convertStream<R, T extends ReadableStream<R>>(
+  stream: ReadableStream<R>,
+  clazz: ReadableStreamConstructor<T>
+): T & ReadableStream<R> {
   if (stream && stream.constructor === clazz) {
-    return stream
+    return stream as any
   }
   return new clazz(new ReaderSource(stream.getReader()))
 }
