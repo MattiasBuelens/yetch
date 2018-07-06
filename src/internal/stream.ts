@@ -93,3 +93,36 @@ export function transferStream<R, T extends ReadableStream<R>>(
 ): T & ReadableStream<R> {
   return new clazz(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
 }
+
+class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {
+  private readonly _pull: () => Promise<ArrayBuffer>
+  private readonly _cancel?: (reason: any) => void
+
+  constructor(pull: () => Promise<ArrayBuffer>, cancel?: (reason: any) => void) {
+    this._pull = pull
+    this._cancel = cancel
+  }
+
+  pull(c: ReadableStreamDefaultController<Uint8Array>) {
+    return this._pull().then(chunk => {
+      c.enqueue(new Uint8Array(chunk))
+      c.close()
+    })
+  }
+
+  cancel(reason: any) {
+    if (this._cancel) {
+      this._cancel(reason)
+    }
+  }
+}
+
+export function readArrayBufferAsStream<T extends ReadableStream>(
+  clazz: ReadableStreamConstructor<T>,
+  pull: () => Promise<ArrayBuffer>,
+  cancel?: (reason: any) => void
+): T & ReadableStream {
+  return new clazz(new ArrayBufferSource(pull, cancel), {
+    highWaterMark: 0 // do not pull immediately
+  })
+}

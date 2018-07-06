@@ -3,9 +3,9 @@ import {support} from './support'
 import {Request as RequestPolyfill} from './Request'
 import {InternalResponse, Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
-import {BodyInit as BodyInitPolyfill, readArrayBufferAsStream} from './Body'
+import {BodyInit as BodyInitPolyfill} from './Body'
 import {followAbortSignal} from './AbortController'
-import {convertStream, ReadableStream, ReadableStreamConstructor} from './stream'
+import {convertStream, ReadableStream, ReadableStreamConstructor, readArrayBufferAsStream} from './stream'
 import {GlobalReadableStream} from './globals'
 
 const fetch = root.fetch!
@@ -89,6 +89,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
       bodyInit = readArrayBufferAsStream(
+        GlobalReadableStream,
         () => response.arrayBuffer(),
         () => {
           // abort ongoing fetch when response body is cancelled

@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, TypedArray} from './util'
-import {isReadableStream, ReadableStream, transferStream} from './stream'
+import {isReadableStream, ReadableStream, readArrayBufferAsStream, transferStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 
@@ -123,30 +123,6 @@ function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer>
 function readStreamAsText(readable: ReadableStream): Promise<string> {
   // TODO Use TransformStream and TextDecoder if supported
   return readStreamAsBlob(readable).then(readBlobAsText)
-}
-
-export function readArrayBufferAsStream(
-  pull: () => Promise<ArrayBuffer>,
-  cancel?: (reason: any) => void
-): ReadableStream {
-  return new GlobalReadableStream(
-    {
-      pull(c) {
-        return pull().then(chunk => {
-          c.enqueue(new Uint8Array(chunk))
-          c.close()
-        })
-      },
-      cancel(reason: any) {
-        if (cancel) {
-          cancel(reason)
-        }
-      }
-    },
-    {
-      highWaterMark: 0 // do not pull immediately
-    }
-  )
 }
 
 function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
@@ -290,6 +266,7 @@ export class Body {
         this.body = this._bodyReadableStream
       } else {
         this.body = readArrayBufferAsStream(
+          GlobalReadableStream,
           () => {
             return this.arrayBuffer!() // also sets bodyUsed to true
           },
