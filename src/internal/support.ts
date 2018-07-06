@@ -9,5 +9,8 @@ export const support = {
   blob: 'FileReader' in root && !!createBlob,
   formData: 'FormData' in root,
   arrayBuffer: 'ArrayBuffer' in root,
-  stream: isReadableStreamConstructor(GlobalReadableStream)
+  stream: isReadableStreamConstructor(GlobalReadableStream),
+  streamRequest: 'Request' in root && 'body' in root.Request!.prototype,
+  streamResponse: 'Response' in root && 'body' in root.Response!.prototype,
+  abort: 'AbortController' in root && 'Request' in root && 'signal' in root.Request!.prototype
 }

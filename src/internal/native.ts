@@ -18,15 +18,15 @@ export function nativeFetchSupported() {
 }
 
 function nativeFetchSupportsAbort() {
-  return !!AbortController && !!Request && 'signal' in Request.prototype
+  return support.abort
 }
 
 function nativeRequestSupportsStream() {
-  return !!Request && 'body' in Request.prototype
+  return support.streamRequest
 }
 
 function nativeResponseSupportsStream() {
-  return !!Response && 'body' in Response.prototype
+  return support.streamResponse
 }
 
 // The ReadableStream class used by native fetch
