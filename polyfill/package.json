@@ -1,6 +1,6 @@
 {
   "name": "yetch-polyfill",
   "main": "../dist/yetch-polyfill.js",
-  "types": "../types/polyfill.d.ts",
-  "module": "../dist/yetch-polyfill.mjs"
+  "module": "../dist/yetch-polyfill.mjs",
+  "types": "../types/polyfill.d.ts"
 }
