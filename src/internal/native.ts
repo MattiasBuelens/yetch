@@ -8,13 +8,14 @@ import {followAbortSignal} from './AbortController'
 import {convertStream, ReadableStream, ReadableStreamConstructor, readArrayBufferAsStream} from './stream'
 import {GlobalReadableStream} from './globals'
 
+// Capture native implementations *before* we install any polyfill
 const fetch = root.fetch!
 const Request = root.Request!
 const Response = root.Response!
 const AbortController = root.AbortController!
 
 export function nativeFetchSupported() {
-  return !!fetch && support.abort && support.streamResponse
+  return typeof fetch === 'function' && support.abort && support.streamResponse
 }
 
 // The ReadableStream class used by native fetch
