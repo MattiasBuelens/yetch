@@ -1,7 +1,7 @@
 import {root} from './root'
 import {support} from './support'
 import {Request as RequestPolyfill} from './Request'
-import {Response as ResponsePolyfill} from './Response'
+import {InternalResponse, Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
 import {BodyInit as BodyInitPolyfill, readArrayBufferAsStream} from './Body'
 import {followAbortSignal} from './AbortController'
@@ -77,7 +77,7 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
   })
 }
 
-function toPolyfillBodyInit(response: Response, controller: AbortController): Promise<BodyInit> {
+function toPolyfillBodyInit(response: Response, controller: AbortController): Promise<BodyInitPolyfill> {
   let bodyInit: BodyInitPolyfill
   if (support.stream) {
     // Create response from stream
@@ -110,11 +110,9 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   }
 }
 
-function toPolyfillResponse(response: Response, controller: AbortController): Promise<ResponsePolyfill> {
-  // TODO Construct Response from Promise<BodyInit>?
-  return toPolyfillBodyInit(response, controller).then(bodyInit => {
-    return new ResponsePolyfill(bodyInit, response)
-  })
+function toPolyfillResponse(response: Response, controller: AbortController): ResponsePolyfill {
+  const bodyInit = toPolyfillBodyInit(response, controller)
+  return new (ResponsePolyfill as InternalResponse)(bodyInit, response)
 }
 
 export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill> {
