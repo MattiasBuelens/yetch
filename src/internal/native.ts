@@ -82,6 +82,7 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): Pr
   if (support.stream) {
     // Create response from stream
     if (nativeResponseSupportsStream()) {
+      // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
       const nativeBody = (response.body as any) as ReadableStream | null
       bodyInit = nativeBody && convertStream(nativeBody, GlobalReadableStream)
     } else {

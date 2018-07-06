@@ -245,7 +245,6 @@ abstract class Body {
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
-      // TODO attach abort signal to stream
       this._bodyReadableStream = transferStream(body, GlobalReadableStream, () => {
         // set bodyUsed to true when stream becomes disturbed (read or canceled)
         this.bodyUsed = true
@@ -278,14 +277,12 @@ abstract class Body {
       } else if (this._bodyReadableStream) {
         this.body = this._bodyReadableStream
       } else {
-        // TODO attach abort signal to stream
         this.body = readArrayBufferAsStream(
           () => {
             return this.arrayBuffer!() // also sets bodyUsed to true
           },
           () => {
             this.bodyUsed = true
-            // TODO abort ongoing fetch
           }
         )
       }
