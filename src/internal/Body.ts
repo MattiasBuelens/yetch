@@ -277,7 +277,7 @@ abstract class Body {
     }
 
     if (support.stream) {
-      if (!body) {
+      if (body == null) {
         this.body = null
       } else if (this._bodyReadableStream) {
         this.body = this._bodyReadableStream
