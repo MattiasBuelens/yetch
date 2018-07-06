@@ -40,12 +40,16 @@ export function isReadableStreamConstructor(ctor: any): ctor is ReadableStreamCo
 
 class ReaderSource<R> implements ReadableStreamSource<R> {
   private readonly _reader: ReadableStreamDefaultReader<R>
+  private _disturbed: boolean = false
+  private _onDisturbed?: () => void
 
-  constructor(reader: ReadableStreamDefaultReader<R>) {
+  constructor(reader: ReadableStreamDefaultReader<R>, onDisturbed?: () => void) {
     this._reader = reader
+    this._onDisturbed = onDisturbed
   }
 
   pull(c: ReadableStreamDefaultController<R>) {
+    this._setDisturbed()
     return this._reader.read().then(({done, value}) => {
       if (done) {
         c.close()
@@ -56,7 +60,19 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
   }
 
   cancel(reason: any) {
+    this._setDisturbed()
     return this._reader.cancel(reason)
+  }
+
+  private _setDisturbed() {
+    if (this._disturbed) {
+      return
+    }
+    this._disturbed = true
+    if (this._onDisturbed) {
+      this._onDisturbed()
+      this._onDisturbed = undefined!
+    }
   }
 }
 
@@ -64,8 +80,16 @@ export function convertStream<R, T extends ReadableStream<R>>(
   stream: ReadableStream<R>,
   clazz: ReadableStreamConstructor<T>
 ): T & ReadableStream<R> {
-  if (stream && stream.constructor === clazz) {
+  if (stream.constructor === clazz) {
     return stream as any
   }
-  return new clazz(new ReaderSource(stream.getReader()))
+  return new clazz(new ReaderSource(stream.getReader()), {highWaterMark: 0})
+}
+
+export function transferStream<R, T extends ReadableStream<R>>(
+  stream: ReadableStream<R>,
+  clazz: ReadableStreamConstructor<T>,
+  onDisturbed: () => void
+): T & ReadableStream<R> {
+  return new clazz(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
 }

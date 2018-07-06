@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, TypedArray} from './util'
-import {convertStream, isReadableStream, ReadableStream} from './stream'
+import {isReadableStream, ReadableStream, transferStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 
@@ -245,10 +245,11 @@ abstract class Body {
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
-      // TODO transfer stream
-      // TODO set bodyUsed to true when stream becomes disturbed (read or canceled)
       // TODO attach abort signal to stream
-      this._bodyReadableStream = convertStream(body, GlobalReadableStream)
+      this._bodyReadableStream = transferStream(body, GlobalReadableStream, () => {
+        // set bodyUsed to true when stream becomes disturbed (read or canceled)
+        this.bodyUsed = true
+      })
     } else {
       throw new Error('unsupported BodyInit type')
     }
