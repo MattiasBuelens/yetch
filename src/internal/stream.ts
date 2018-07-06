@@ -12,6 +12,32 @@ export interface ReadableStreamConstructor<T extends ReadableStream<any> = Reada
   new <R>(underlyingSource?: ReadableStreamSource<R>, strategy?: QueuingStrategy<R>): T & ReadableStream<R>
 }
 
+export function isReadableStream<T = Uint8Array>(stream: any): stream is ReadableStream<T> {
+  return stream && typeof (stream as ReadableStream).getReader === 'function'
+}
+
+export function isReadableStreamConstructor(ctor: any): ctor is ReadableStreamConstructor {
+  if (typeof ctor !== 'function') {
+    return false
+  }
+  try {
+    // Check if constructor calls start() on the underlying source
+    let startCalled = false
+    const stream = new ctor({
+      start() {
+        startCalled = true
+      }
+    })
+    if (!startCalled) {
+      return false
+    }
+    // Check if constructed stream is actually a ReadableStream (and not a WritableStream or TransformStream)
+    return isReadableStream(stream)
+  } catch (e) {
+    return false
+  }
+}
+
 class ReaderSource<R> implements ReadableStreamSource<R> {
   private readonly _reader: ReadableStreamDefaultReader<R>
 

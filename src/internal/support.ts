@@ -1,5 +1,7 @@
 import {root} from './root'
 import {createBlob} from './blob'
+import {GlobalReadableStream} from './globals'
+import {isReadableStreamConstructor} from './stream'
 
 export const support = {
   searchParams: 'URLSearchParams' in root,
@@ -7,15 +9,5 @@ export const support = {
   blob: 'FileReader' in root && !!createBlob,
   formData: 'FormData' in root,
   arrayBuffer: 'ArrayBuffer' in root,
-  stream:
-    'ReadableStream' in root &&
-    (() => {
-      try {
-        // Edge does not support developer-constructed streams
-        new ReadableStream()
-        return true
-      } catch (e) {
-        return false
-      }
-    })()
+  stream: isReadableStreamConstructor(GlobalReadableStream)
 }

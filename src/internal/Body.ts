@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, TypedArray} from './util'
-import {convertStream, ReadableStream} from './stream'
+import {convertStream, isReadableStream, ReadableStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 
@@ -53,10 +53,6 @@ const isArrayBufferView: typeof ArrayBuffer.isView =
   function(obj) {
     return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1
   }
-
-function isReadableStream(obj: any): obj is ReadableStream {
-  return obj && GlobalReadableStream.prototype.isPrototypeOf(obj)
-}
 
 function consumed(body: Body): Promise<never> | undefined {
   if (body.bodyUsed) {
