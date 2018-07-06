@@ -2,12 +2,13 @@
   "name": "yetch",
   "description": "Yet-another-fetch polyfill. window.fetch that supports aborting via AbortController",
   "version": "1.0.0",
-  "main": "cjs/index.js",
-  "types": "cjs/index.d.ts",
+  "main": "dist/yetch.js",
+  "types": "types/index.d.ts",
   "module": "dist/yetch.mjs",
   "repository": "https://github.com/Netflix/yetch",
   "license": "MIT",
   "dependencies": {
+    "@types/whatwg-streams": "^0.0.6",
     "tslib": "^1.9.1"
   },
   "devDependencies": {
@@ -33,14 +34,14 @@
   },
   "files": [
     "LICENSE",
-    "polyfill",
-    "cjs",
-    "dist"
+    "dist",
+    "types",
+    "polyfill"
   ],
   "scripts": {
-    "build": "npm run build:cjs && npm run build:bundle",
+    "build": "npm run build:types && npm run build:bundle",
     "build:bundle": "rollup -c",
-    "build:cjs": "tsc -p ./src",
+    "build:types": "tsc -p ./src --emitDeclarationOnly",
     "lint": "eslint --report-unused-disable-directives *.js test/*.js",
     "karma": "karma start ./test/karma.config.js --no-single-run --auto-watch",
     "pretest": "npm run lint && npm run build",

@@ -22,16 +22,10 @@ const plugins = [
 module.exports = [
   {
     input: 'src/index.ts',
-    output: [
-      {
-        file: 'dist/yetch.cjs.js',
-        format: 'cjs'
-      },
-      {
-        file: 'dist/yetch.mjs',
-        format: 'es'
-      }
-    ],
+    output: {
+      file: 'dist/yetch.mjs',
+      format: 'es'
+    },
     plugins
   },
   {
@@ -45,16 +39,10 @@ module.exports = [
   },
   {
     input: 'src/polyfill.ts',
-    output: [
-      {
-        file: 'dist/yetch-polyfill.cjs.js',
-        format: 'cjs'
-      },
-      {
-        file: 'dist/yetch-polyfill.mjs',
-        format: 'es'
-      }
-    ],
+    output: {
+      file: 'dist/yetch-polyfill.mjs',
+      format: 'es'
+    },
     plugins
   },
   {

@@ -1,21 +1,39 @@
 import {root} from './root'
-import {Request as RequestPolyfill, RequestInit as RequestInitPolyfill} from './Request'
+import {support} from './support'
+import {Request as RequestPolyfill} from './Request'
 import {Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
+import {BodyInit as BodyInitPolyfill, readArrayBufferAsStream} from './Body'
 import {followAbortSignal} from './AbortController'
+import {convertStream, ReadableStream, ReadableStreamConstructor} from './stream'
+import {GlobalReadableStream} from './globals'
 
 const fetch = root.fetch!
 const Request = root.Request!
+const Response = root.Response!
 const AbortController = root.AbortController!
-const AbortSignal = root.AbortSignal!
 
 export function nativeFetchSupported() {
-  return !!fetch && nativeFetchSupportsAbort()
+  return !!fetch && nativeFetchSupportsAbort() && nativeResponseSupportsStream()
 }
 
 function nativeFetchSupportsAbort() {
   return !!AbortController && !!Request && 'signal' in Request.prototype
 }
+
+function nativeRequestSupportsStream() {
+  return !!Request && 'body' in Request.prototype
+}
+
+function nativeResponseSupportsStream() {
+  return !!Response && 'body' in Response.prototype
+}
+
+// The ReadableStream class used by native fetch
+// May differ from the global ReadableStream class
+const NativeReadableStream: ReadableStreamConstructor | undefined = nativeResponseSupportsStream()
+  ? (new Response('').body!.constructor as any)
+  : undefined
 
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
   const headers =
@@ -26,49 +44,82 @@ function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<
   return list
 }
 
-function toNativeAbortSignal(signal?: AbortSignal): AbortSignal | undefined {
-  if (!signal || signal instanceof AbortSignal) {
-    return signal
+function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
+  let bodyPromise: Promise<BodyInit>
+  if (request._bodyReadableStream) {
+    if (nativeRequestSupportsStream()) {
+      // Body is a stream, and native supports uploading a stream
+      bodyPromise = Promise.resolve(convertStream(request._bodyReadableStream, NativeReadableStream!))
+    } else {
+      // Body is a stream, but native doesn't support uploading a stream
+      // Upload as array buffer instead
+      bodyPromise = request.arrayBuffer!()
+    }
+  } else {
+    // Body is not a stream, so upload as-is
+    bodyPromise = Promise.resolve(request._bodyInit)
   }
-  const controller = new AbortController()
-  followAbortSignal(controller, signal)
-  return controller.signal
-}
 
-function toNativeRequest(request: RequestPolyfill): Request {
-  return new Request(request.url, {
-    body: request._bodyInit as BodyInit,
-    credentials: request.credentials,
-    headers: collectHeaders(request.headers),
-    method: request.method,
-    mode: request.mode,
-    referrer: request.referrer,
-    signal: toNativeAbortSignal(request.signal)
-  })
-}
-
-function toNativeRequestInit(init?: RequestInitPolyfill): RequestInit {
-  if (!init) {
-    return {}
+  if (request.signal) {
+    followAbortSignal(controller, request.signal)
   }
-  return {
-    body: init.body as BodyInit,
-    credentials: init.credentials,
-    headers: collectHeaders(init.headers),
-    method: init.method,
-    mode: init.mode,
-    referrer: init.referrer,
-    signal: toNativeAbortSignal(init.signal)
-  }
-}
 
-export function nativeFetch(input: RequestPolyfill | string, init?: RequestInitPolyfill): Promise<ResponsePolyfill> {
-  let nativeInput: Request | string = input instanceof RequestPolyfill ? toNativeRequest(input) : input
-  let nativeInit: RequestInit = toNativeRequestInit(init)
-  return fetch(nativeInput, nativeInit).then(response => {
-    // TODO Use ReadableStream as body init
-    return response.arrayBuffer().then(arrayBuffer => {
-      return new ResponsePolyfill(arrayBuffer, response)
+  return bodyPromise.then(bodyInit => {
+    return new Request(request.url, {
+      body: bodyInit,
+      credentials: request.credentials,
+      headers: collectHeaders(request.headers),
+      method: request.method,
+      mode: request.mode,
+      referrer: request.referrer,
+      signal: controller.signal
     })
   })
+}
+
+function toPolyfillBodyInit(response: Response, controller: AbortController): Promise<BodyInit> {
+  let bodyInit: BodyInitPolyfill
+  if (support.stream) {
+    // Create response from stream
+    if (nativeResponseSupportsStream()) {
+      // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
+      const nativeBody = (response.body as any) as ReadableStream | null
+      bodyInit = nativeBody && convertStream(nativeBody, GlobalReadableStream)
+    } else {
+      // Cannot read response as a stream
+      // Construct a stream that reads the entire response as a single array buffer instead
+      bodyInit = readArrayBufferAsStream(
+        () => response.arrayBuffer(),
+        () => {
+          // abort ongoing fetch when response body is cancelled
+          controller.abort()
+        }
+      )
+    }
+    return Promise.resolve(bodyInit)
+  } else {
+    // Streams are not supported
+    // Return a promise that reads the entire response
+    if (support.blob) {
+      return response.blob()
+    } else if (support.arrayBuffer) {
+      return response.arrayBuffer()
+    } else {
+      return response.text()
+    }
+  }
+}
+
+function toPolyfillResponse(response: Response, controller: AbortController): Promise<ResponsePolyfill> {
+  // TODO Construct Response from Promise<BodyInit>?
+  return toPolyfillBodyInit(response, controller).then(bodyInit => {
+    return new ResponsePolyfill(bodyInit, response)
+  })
+}
+
+export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill> {
+  const controller = new AbortController()
+  return toNativeRequest(request, controller)
+    .then(fetch)
+    .then(response => toPolyfillResponse(response, controller))
 }

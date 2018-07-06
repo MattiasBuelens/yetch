@@ -3,6 +3,13 @@ import {nativeFetch, nativeFetchSupported} from './native'
 import {Request, RequestInit} from './Request'
 import {Response} from './Response'
 
-export type Fetch = (input: Request | string, init?: RequestInit) => Promise<Response>
-export const fetch: Fetch = nativeFetchSupported() ? nativeFetch : xhrFetch
+type FetchImplementation = (request: Request) => Promise<Response>
+const fetchImplementation: FetchImplementation = nativeFetchSupported() ? nativeFetch : xhrFetch
+
+export function fetch(input: Request | string, init?: RequestInit): Promise<Response> {
+  return new Promise<Response>(resolve => {
+    resolve(fetchImplementation(new Request(input, init)))
+  })
+}
+
 ;(fetch as any).polyfill = true

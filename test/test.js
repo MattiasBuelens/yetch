@@ -21,6 +21,16 @@ var support = {
     })(),
   formData: 'FormData' in self,
   arrayBuffer: 'ArrayBuffer' in self,
+  stream:
+    'ReadableStream' in self &&
+    (function() {
+      try {
+        new ReadableStream()
+        return true
+      } catch (e) {
+        return false
+      }
+    })(),
   aborting: 'signal' in new Request(''),
   permanentRedirect: !/Trident/.test(navigator.userAgent)
 }
@@ -84,6 +94,35 @@ function readArrayBufferAsText(buf) {
   return chars.join('')
 }
 
+function streamFromChunk(chunk) {
+  return new ReadableStream({
+    start(c) {
+      c.enqueue(chunk)
+      c.close()
+    }
+  })
+}
+
+function readAllChunks(readable) {
+  const reader = readable.getReader()
+  const chunks = []
+
+  function pump(result) {
+    if (result.done) {
+      return Promise.resolve(chunks)
+    } else {
+      chunks.push(result.value)
+      return reader.read().then(pump)
+    }
+  }
+
+  return reader.read().then(pump)
+}
+
+function readStreamAsBlob(readable) {
+  return readAllChunks(readable).then(chunks => new Blob(chunks))
+}
+
 var preservedGlobals = {}
 var keepGlobals = ['fetch', 'Headers', 'Request', 'Response']
 var exercise = ['polyfill']
@@ -138,14 +177,26 @@ exercise.forEach(function(exerciseMode) {
             ['type DataView', new DataView(arrayBufferFromText(expected))]
           ])
         }
+        if (exerciseMode !== 'native' && support.stream) {
+          inputs.push([
+            'type ReadableStream',
+            function() {
+              return streamFromChunk(new Uint8Array(arrayBufferFromText(expected)))
+            }
+          ])
+        }
 
         inputs.forEach(function(input) {
           var typeLabel = input[0],
             body = input[1]
 
+          function bodyInitFactory() {
+            return typeof body === 'function' ? body() : body
+          }
+
           suite(typeLabel, function() {
             featureDependent(test, support.blob, 'consume as blob', function() {
-              var r = factory(body)
+              var r = factory(bodyInitFactory())
               return r
                 .blob()
                 .then(readBlobAsText)
@@ -155,14 +206,14 @@ exercise.forEach(function(exerciseMode) {
             })
 
             test('consume as text', function() {
-              var r = factory(body)
+              var r = factory(bodyInitFactory())
               return r.text().then(function(text) {
                 assert.equal(text, expected)
               })
             })
 
             featureDependent(test, support.arrayBuffer, 'consume as array buffer', function() {
-              var r = factory(body)
+              var r = factory(bodyInitFactory())
               return r
                 .arrayBuffer()
                 .then(readArrayBufferAsText)
@@ -170,6 +221,51 @@ exercise.forEach(function(exerciseMode) {
                   assert.equal(text, expected)
                 })
             })
+            featureDependent(
+              test,
+              exerciseMode !== 'native' && support.stream,
+              'consume as readable stream',
+              function() {
+                var r = factory(bodyInitFactory())
+                return readStreamAsBlob(r.body)
+                  .then(readBlobAsText)
+                  .then(function(text) {
+                    assert.equal(text, expected)
+                  })
+              }
+            )
+          })
+        })
+
+        suite('type null', function() {
+          var body = null
+
+          featureDependent(test, support.blob, 'consume as blob', function() {
+            var r = factory(body)
+            return r.blob().then(function(blob) {
+              assert.equal(blob instanceof Blob, true)
+              assert.equal(blob.size, 0)
+            })
+          })
+
+          test('consume as text', function() {
+            var r = factory(body)
+            return r.text().then(function(text) {
+              assert.equal(text, '')
+            })
+          })
+
+          featureDependent(test, support.arrayBuffer, 'consume as array buffer', function() {
+            var r = factory(body)
+            return r.arrayBuffer().then(function(buf) {
+              assert.equal(buf instanceof ArrayBuffer, true)
+              assert.equal(buf.byteLength, 0)
+            })
+          })
+
+          featureDependent(test, exerciseMode !== 'native' && support.stream, 'consume as readable stream', function() {
+            var r = factory(body)
+            assert.equal(r.body, null)
           })
         })
       })
@@ -1027,6 +1123,20 @@ exercise.forEach(function(exerciseMode) {
             return fetch('/request', {
               method: 'post',
               body: new Uint8Array(arrayBufferFromText('name=Hubot'))
+            })
+              .then(function(response) {
+                return response.json()
+              })
+              .then(function(request) {
+                assert.equal(request.method, 'POST')
+                assert.equal(request.data, 'name=Hubot')
+              })
+          })
+
+          featureDependent(test, exerciseMode !== 'native' && support.stream, 'ReadableStream body', function() {
+            return fetch('/request', {
+              method: 'post',
+              body: streamFromChunk(new Uint8Array(arrayBufferFromText('name=Hubot')))
             })
               .then(function(response) {
                 return response.json()

@@ -4,7 +4,7 @@ function normalizeName(name: any): string {
   if (typeof name !== 'string') {
     name = String(name)
   }
-  if (/[^a-z0-9\-#$%&'*+.\^_`|~]/i.test(name)) {
+  if (/[^a-z0-9\-#$%&'*+.^_`|~]/i.test(name)) {
     throw new TypeError('Invalid character in header field name')
   }
   return name.toLowerCase()
@@ -98,7 +98,7 @@ class Headers implements Iterable<[string, string]> {
 
   keys(): IterableIterator<string> {
     const items: string[] = []
-    this.forEach(function(value, name) {
+    this.forEach((value, name) => {
       items.push(name)
     })
     return iteratorFor(items)
@@ -106,7 +106,7 @@ class Headers implements Iterable<[string, string]> {
 
   values(): IterableIterator<string> {
     const items: string[] = []
-    this.forEach(function(value) {
+    this.forEach(value => {
       items.push(value)
     })
     return iteratorFor(items)
@@ -114,7 +114,7 @@ class Headers implements Iterable<[string, string]> {
 
   entries(): IterableIterator<[string, string]> {
     const items: Array<[string, string]> = []
-    this.forEach(function(value, name) {
+    this.forEach((value, name) => {
       items.push([name, value])
     })
     return iteratorFor(items)

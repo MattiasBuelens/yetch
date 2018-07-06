@@ -4,9 +4,17 @@ declare global {
     Headers?: typeof Headers
     Request?: typeof Request
     Response?: typeof Response
+
     AbortController?: typeof AbortController
     AbortSignal?: typeof AbortSignal
     DOMException?: typeof DOMException
+
+    ReadableStream?: typeof ReadableStream
+
+    BlobBuilder?: typeof MSBlobBuilder
+    MozBlobBuilder?: typeof MSBlobBuilder
+    MSBlobBuilder?: typeof MSBlobBuilder
+    WebKitBlobBuilder?: typeof MSBlobBuilder
   }
 }
 

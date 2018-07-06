@@ -1,5 +1,5 @@
 import {Headers, HeadersInit} from './Headers'
-import {Body, BodyInit} from './Body'
+import {Body, BodyInit, cloneBody} from './Body'
 
 const redirectStatuses = [301, 302, 303, 307, 308]
 
@@ -19,22 +19,19 @@ class Response extends Body {
   url: string
 
   constructor(bodyInit?: BodyInit, options?: ResponseInit) {
-    super()
-    if (!options) {
-      options = {}
-    }
-
+    options = options || {}
+    let headers = new Headers(options.headers)
+    super(bodyInit || null, headers)
     this.type = 'default'
     this.status = options.status === undefined ? 200 : options.status
     this.ok = this.status >= 200 && this.status < 300
     this.statusText = options.statusText !== undefined ? String(options.statusText) : 'OK'
-    this.headers = new Headers(options.headers)
+    this.headers = headers
     this.url = options.url || ''
-    this._initBody(bodyInit)
   }
 
   clone(): Response {
-    return new Response(this._bodyInit, {
+    return new Response(cloneBody(this), {
       status: this.status,
       statusText: this.statusText,
       headers: new Headers(this.headers),
