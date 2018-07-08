@@ -17,6 +17,10 @@ declare global {
     MSBlobBuilder?: typeof MSBlobBuilder
     WebKitBlobBuilder?: typeof MSBlobBuilder
   }
+
+  interface Request {
+    body?: ReadableStream | null
+  }
 }
 
 /** @internal */

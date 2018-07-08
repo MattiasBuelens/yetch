@@ -5,7 +5,13 @@ import {InternalResponse, Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
 import {InternalBodyInit} from './Body'
 import {followAbortSignal} from './AbortController'
-import {convertStream, ReadableStream, ReadableStreamConstructor, readArrayBufferAsStream} from './stream'
+import {
+  convertStream,
+  isReadableStreamConstructor,
+  ReadableStream,
+  ReadableStreamConstructor,
+  readArrayBufferAsStream
+} from './stream'
 import {GlobalReadableStream} from './globals'
 
 // Capture native implementations *before* we install any polyfill
@@ -18,11 +24,22 @@ export function nativeFetchSupported() {
   return typeof fetch === 'function' && support.abort && support.streamResponse
 }
 
-// The ReadableStream class used by native fetch
+// The ReadableStream class used by native's Request.body
 // May differ from the global ReadableStream class
-const NativeReadableStream: ReadableStreamConstructor | undefined = support.streamResponse
-  ? (new Response('').body!.constructor as any)
-  : undefined
+function getNativeRequestReadableStreamConstructor(): ReadableStreamConstructor | undefined {
+  try {
+    if (support.streamRequest) {
+      const requestBody = new Request('about:blank', {body: '', method: 'POST'}).body
+      if (requestBody && isReadableStreamConstructor(requestBody.constructor)) {
+        return requestBody.constructor
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return undefined
+}
+const NativeRequestReadableStream: ReadableStreamConstructor | undefined = getNativeRequestReadableStreamConstructor()
 
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
   const headers =
@@ -36,9 +53,9 @@ function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<
 function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
   let bodyPromise: Promise<BodyInit>
   if (request._bodyReadableStream) {
-    if (support.streamRequest) {
+    if (support.streamRequest && NativeRequestReadableStream) {
       // Body is a stream, and native supports uploading a stream
-      bodyPromise = Promise.resolve(convertStream(NativeReadableStream!, request._bodyReadableStream))
+      bodyPromise = Promise.resolve(convertStream(NativeRequestReadableStream, request._bodyReadableStream))
     } else {
       // Body is a stream, but native doesn't support uploading a stream
       // Upload as array buffer instead
