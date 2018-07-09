@@ -83,19 +83,20 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
   })
 }
 
-function toPolyfillBodyInit(response: Response, controller: AbortController): InternalBodyInit {
+function toPolyfillResponse(response: Response, controller: AbortController): ResponsePolyfill {
+  let bodyInit: InternalBodyInit
   if (support.stream) {
     // Return a streaming response
-    let bodyInit: ReadableStream | null
+    let bodyStream: ReadableStream | null
     if (support.streamResponse) {
       // Read response as stream
       // TODO abort request when body is cancelled, in case AbortSignal is not natively supported
       const nativeBody = (response.body as any) as ReadableStream | null
-      bodyInit = nativeBody && convertStream(GlobalReadableStream, nativeBody)
+      bodyStream = nativeBody && convertStream(GlobalReadableStream, nativeBody)
     } else {
       // Cannot read response as a stream
       // Construct a stream that reads the entire response as a single array buffer instead
-      bodyInit = readArrayBufferAsStream(
+      bodyStream = readArrayBufferAsStream(
         GlobalReadableStream,
         () => response.arrayBuffer(),
         () => {
@@ -104,22 +105,19 @@ function toPolyfillBodyInit(response: Response, controller: AbortController): In
         }
       )
     }
-    return bodyInit
+    bodyInit = bodyStream
   } else {
     // Streams are not supported
     // Return a promise that reads the entire response
     if (support.blob) {
-      return response.blob()
+      bodyInit = response.blob()
     } else if (support.arrayBuffer) {
-      return response.arrayBuffer()
+      bodyInit = response.arrayBuffer()
     } else {
-      return response.text()
+      bodyInit = response.text()
     }
   }
-}
 
-function toPolyfillResponse(response: Response, controller: AbortController): ResponsePolyfill {
-  const bodyInit = toPolyfillBodyInit(response, controller)
   return new (ResponsePolyfill as InternalResponse)(bodyInit, response)
 }
 
