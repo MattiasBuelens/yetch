@@ -2,6 +2,8 @@ import {Headers, HeadersInit} from './Headers'
 import {Body, BodyInit, cloneBody, InternalBodyInit} from './Body'
 import {AbortController, AbortSignal} from './AbortController'
 
+export type ProgressCallback = (loaded: number, total?: number) => void
+
 export interface RequestInit {
   body?: BodyInit
   credentials?: RequestCredentials
@@ -10,6 +12,7 @@ export interface RequestInit {
   mode?: RequestMode
   referrer?: string
   signal?: AbortSignal
+  onprogress?: ProgressCallback
 }
 
 // HTTP methods whose capitalization should be normalized
@@ -32,6 +35,7 @@ export class Request extends Body {
   referrer: string
   signal: AbortSignal
   url: string
+  onprogress: ProgressCallback | null
 
   constructor(input: Request | string, options?: RequestInit) {
     options = options || {}
@@ -42,6 +46,7 @@ export class Request extends Body {
     let method: string
     let mode: RequestMode
     let signal: AbortSignal | null
+    let onprogress: ProgressCallback | null
 
     if (input instanceof Request) {
       if (input.bodyUsed) {
@@ -55,6 +60,7 @@ export class Request extends Body {
       method = input.method
       mode = input.mode
       signal = input.signal
+      onprogress = input.onprogress
       if (!body && input._bodyInit != null) {
         body = input._bodyInit
         input.bodyUsed = true
@@ -65,6 +71,7 @@ export class Request extends Body {
       method = 'GET'
       mode = 'cors'
       signal = null
+      onprogress = null
     }
 
     if (options.headers || !headers) {
@@ -78,6 +85,7 @@ export class Request extends Body {
     this.mode = options.mode || mode
     this.signal = options.signal || signal || createDefaultAbortSignal()
     this.referrer = ''
+    this.onprogress = options.onprogress || onprogress
 
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {
       throw new TypeError('Body not allowed for GET or HEAD requests')
