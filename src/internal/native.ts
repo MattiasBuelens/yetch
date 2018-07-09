@@ -23,7 +23,7 @@ const Response = root.Response!
 const AbortController = root.AbortController!
 
 export function nativeFetchSupported() {
-  return typeof fetch === 'function' && support.abort && support.streamResponse
+  return typeof fetch === 'function' && support.abort && support.stream && support.streamResponse
 }
 
 // The ReadableStream class used by native's Request.body
