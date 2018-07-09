@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, noOp, TypedArray} from './util'
-import {isReadableStream, ReadableStream, readArrayBufferAsStream, transferStream} from './stream'
+import {isReadableStream, monitorStream, ReadableStream, readArrayBufferAsStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 
@@ -234,7 +234,8 @@ export class Body {
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
-      this._bodyReadableStream = transferStream(GlobalReadableStream, body, () => {
+      // transfer stream and monitor when disturbed
+      this._bodyReadableStream = monitorStream(GlobalReadableStream, body, () => {
         // set bodyUsed to true when stream becomes disturbed (read or canceled)
         this.bodyUsed = true
       })

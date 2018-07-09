@@ -40,23 +40,35 @@ export function isReadableStreamConstructor(ctor: any): ctor is ReadableStreamCo
   }
 }
 
-class ReaderSource<R> implements ReadableStreamSource<R> {
-  private readonly _reader: ReadableStreamDefaultReader<R>
+/** @internal */
+export type ReadProgressCallback = (result: IteratorResult<Uint8Array>) => void
+
+class ReaderSource implements ReadableStreamSource<Uint8Array> {
+  private readonly _reader: ReadableStreamDefaultReader<Uint8Array>
   private _disturbed: boolean = false
   private _onDisturbed?: () => void
+  private _onRead?: ReadProgressCallback
 
-  constructor(reader: ReadableStreamDefaultReader<R>, onDisturbed?: () => void) {
+  constructor(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    onDisturbed?: () => void,
+    onRead?: ReadProgressCallback
+  ) {
     this._reader = reader
     this._onDisturbed = onDisturbed
+    this._onRead = onRead
   }
 
-  pull(c: ReadableStreamDefaultController<R>) {
+  pull(c: ReadableStreamDefaultController<Uint8Array>) {
     this._setDisturbed()
-    return this._reader.read().then(({done, value}) => {
-      if (done) {
+    return this._reader.read().then(result => {
+      if (this._onRead) {
+        this._onRead(result)
+      }
+      if (result.done) {
         c.close()
       } else {
-        c.enqueue(value)
+        c.enqueue(result.value)
       }
     })
   }
@@ -79,10 +91,10 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
 }
 
 /** @internal */
-export function convertStream<R, T extends ReadableStream<R>>(
+export function convertStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
-  stream: ReadableStream<R>
-): T & ReadableStream<R> {
+  stream: ReadableStream
+): T & ReadableStream {
   if (stream.constructor === ctor) {
     return stream as any
   }
@@ -90,12 +102,13 @@ export function convertStream<R, T extends ReadableStream<R>>(
 }
 
 /** @internal */
-export function transferStream<R, T extends ReadableStream<R>>(
+export function monitorStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
-  stream: ReadableStream<R>,
-  onDisturbed: () => void
-): T & ReadableStream<R> {
-  return new ctor(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
+  stream: ReadableStream,
+  onDisturbed?: () => void,
+  onProgress?: ReadProgressCallback
+): T & ReadableStream {
+  return new ctor(new ReaderSource(stream.getReader(), onDisturbed, onProgress), {highWaterMark: 0})
 }
 
 class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {
