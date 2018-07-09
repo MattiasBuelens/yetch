@@ -107,15 +107,8 @@ function toPolyfillResponse(response: Response, controller: AbortController): Re
     }
     bodyInit = bodyStream
   } else {
-    // Streams are not supported
-    // Return a promise that reads the entire response
-    if (support.blob) {
-      bodyInit = response.blob()
-    } else if (support.arrayBuffer) {
-      bodyInit = response.arrayBuffer()
-    } else {
-      bodyInit = response.text()
-    }
+    // Streams are not supported, return a promise that reads the entire response body instead
+    bodyInit = response.blob()
   }
 
   return new (ResponsePolyfill as InternalResponse)(bodyInit, response)
