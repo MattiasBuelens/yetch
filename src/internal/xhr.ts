@@ -78,8 +78,10 @@ abstract class XhrBase {
 
   protected abstract _onLoad(): void
 
-  protected _onProgress(): void {
-    return
+  protected _onProgress(event: ProgressEvent): void {
+    if (this._request.onprogress) {
+      this._request.onprogress(event.loaded, event.lengthComputable ? event.total : undefined)
+    }
   }
 
   protected _handleError(error: Error): void {
@@ -120,7 +122,7 @@ abstract class XhrBase {
       }
     }
 
-    xhr.onprogress = () => this._onProgress()
+    xhr.onprogress = (event: ProgressEvent) => this._onProgress(event)
     xhr.onload = () => this._onLoad()
     xhr.onerror = () => this._onError()
     xhr.ontimeout = () => this._onTimeout()
@@ -213,10 +215,11 @@ class MozChunkedArrayBufferXhr extends XhrBase {
     this._resolveResponse(new Response(this._responseStream, init))
   }
 
-  protected _onProgress(): void {
+  protected _onProgress(event: ProgressEvent): void {
     if (!this._responseCancelled) {
       this._responseController!.enqueue(new Uint8Array(this._xhr.response as ArrayBuffer))
     }
+    super._onProgress(event)
   }
 
   protected _onLoad(): void {
