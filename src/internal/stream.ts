@@ -90,7 +90,7 @@ export function convertStream<T extends ReadableStream>(
 }
 
 /** @internal */
-export function transferStream<T extends ReadableStream>(
+export function monitorStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream,
   onDisturbed: () => void
