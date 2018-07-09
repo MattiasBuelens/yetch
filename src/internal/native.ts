@@ -1,6 +1,6 @@
 import {root} from './root'
 import {support} from './support'
-import {Request as RequestPolyfill} from './Request'
+import {ProgressCallback, Request as RequestPolyfill} from './Request'
 import {InternalResponse, Response as ResponsePolyfill} from './Response'
 import {Headers as HeadersPolyfill, HeadersInit as HeadersInitPolyfill} from './Headers'
 import {InternalBodyInit} from './Body'
@@ -8,9 +8,11 @@ import {followAbortSignal} from './AbortController'
 import {
   convertStream,
   isReadableStreamConstructor,
+  monitorStream,
   ReadableStream,
   ReadableStreamConstructor,
-  readArrayBufferAsStream
+  readArrayBufferAsStream,
+  ReadProgressCallback
 } from './stream'
 import {GlobalReadableStream} from './globals'
 
@@ -83,7 +85,11 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
   })
 }
 
-function toPolyfillResponse(response: Response, controller: AbortController): ResponsePolyfill {
+function toPolyfillResponse(
+  response: Response,
+  controller: AbortController,
+  onprogress: ProgressCallback | null
+): ResponsePolyfill {
   let bodyInit: InternalBodyInit
   if (support.stream) {
     // Return a streaming response
@@ -105,18 +111,56 @@ function toPolyfillResponse(response: Response, controller: AbortController): Re
         }
       )
     }
+    if (bodyStream && onprogress) {
+      bodyStream = monitorStreamProgress(bodyStream, onprogress, getContentLength(response.headers))
+    }
     bodyInit = bodyStream
   } else {
     // Streams are not supported, return a promise that reads the entire response body instead
-    bodyInit = response.blob()
+    let bodyBlob = response.blob()
+    if (onprogress) {
+      bodyBlob = monitorBlobProgress(bodyBlob, onprogress, getContentLength(response.headers))
+    }
+    bodyInit = bodyBlob
   }
 
   return new (ResponsePolyfill as InternalResponse)(bodyInit, response)
+}
+
+function getContentLength(headers: Headers): number | undefined {
+  return headers.has('content-length') ? Number(headers.get('content-length')) : undefined
+}
+
+function monitorStreamProgress(stream: ReadableStream, onprogress: ProgressCallback, total?: number): ReadableStream {
+  let loaded: number = 0
+  const onRead: ReadProgressCallback = ({done, value}) => {
+    if (done) {
+      total = total === undefined ? loaded : total
+    } else {
+      loaded += value.byteLength
+    }
+    onprogress(loaded, total)
+  }
+  return monitorStream(GlobalReadableStream, stream, undefined, onRead)
+}
+
+function monitorBlobProgress(promise: PromiseLike<Blob>, onprogress: ProgressCallback, total?: number): Promise<Blob> {
+  return Promise.resolve()
+    .then(() => {
+      onprogress(0, total)
+      return promise
+    })
+    .then(data => {
+      const loaded = data.size
+      total = total === undefined ? loaded : total
+      onprogress(loaded, total)
+      return data
+    })
 }
 
 export function nativeFetch(request: RequestPolyfill): Promise<ResponsePolyfill> {
   const controller = new AbortController()
   return toNativeRequest(request, controller)
     .then(fetch)
-    .then(response => toPolyfillResponse(response, controller))
+    .then(response => toPolyfillResponse(response, controller, request.onprogress))
 }
