@@ -1,6 +1,6 @@
 import {support} from './support'
 import {Headers} from './Headers'
-import {concatUint8Array, TypedArray} from './util'
+import {concatUint8Array, noOp, TypedArray} from './util'
 import {isReadableStream, ReadableStream, readArrayBufferAsStream, transferStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
@@ -220,6 +220,7 @@ export class Body {
       this._bodyText = body
     } else if (isPromiseLike<BodyInit>(body)) {
       this._bodyPromise = Promise.resolve(body).then(bodyInit => new Body(bodyInit, headers))
+      this._bodyPromise.catch(noOp) // ignore unhandled rejections
     } else if (support.blob && isBlob(body)) {
       this._bodyBlob = body
     } else if (support.formData && isFormData(body)) {

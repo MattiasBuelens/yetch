@@ -1,4 +1,9 @@
 /** @internal */
+export function noOp(): void {
+  return
+}
+
+/** @internal */
 export type TypedArray =
   | Int8Array
   | Int16Array
