@@ -40,17 +40,17 @@ export function isReadableStreamConstructor(ctor: any): ctor is ReadableStreamCo
   }
 }
 
-class ReaderSource<R> implements ReadableStreamSource<R> {
-  private readonly _reader: ReadableStreamDefaultReader<R>
+class ReaderSource implements ReadableStreamSource<Uint8Array> {
+  private readonly _reader: ReadableStreamDefaultReader<Uint8Array>
   private _disturbed: boolean = false
   private _onDisturbed?: () => void
 
-  constructor(reader: ReadableStreamDefaultReader<R>, onDisturbed?: () => void) {
+  constructor(reader: ReadableStreamDefaultReader<Uint8Array>, onDisturbed?: () => void) {
     this._reader = reader
     this._onDisturbed = onDisturbed
   }
 
-  pull(c: ReadableStreamDefaultController<R>) {
+  pull(c: ReadableStreamDefaultController<Uint8Array>) {
     this._setDisturbed()
     return this._reader.read().then(({done, value}) => {
       if (done) {
@@ -79,10 +79,10 @@ class ReaderSource<R> implements ReadableStreamSource<R> {
 }
 
 /** @internal */
-export function convertStream<R, T extends ReadableStream<R>>(
+export function convertStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
-  stream: ReadableStream<R>
-): T & ReadableStream<R> {
+  stream: ReadableStream
+): T & ReadableStream {
   if (stream.constructor === ctor) {
     return stream as any
   }
@@ -90,11 +90,11 @@ export function convertStream<R, T extends ReadableStream<R>>(
 }
 
 /** @internal */
-export function transferStream<R, T extends ReadableStream<R>>(
+export function transferStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
-  stream: ReadableStream<R>,
+  stream: ReadableStream,
   onDisturbed: () => void
-): T & ReadableStream<R> {
+): T & ReadableStream {
   return new ctor(new ReaderSource(stream.getReader(), onDisturbed), {highWaterMark: 0})
 }
 
