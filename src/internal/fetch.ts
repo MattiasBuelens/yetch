@@ -9,7 +9,7 @@ export function fetch(input: Request | string, init?: RequestInit): Promise<Resp
   return new Promise<Response>(resolve => {
     const request = new Request(input, init)
     const impl = supportsNativeFetch && nativeFetchSupportsUrl(request.url) ? nativeFetch : xhrFetch
-    resolve(impl(new Request(input, init)))
+    resolve(impl(request))
   })
 }
 
