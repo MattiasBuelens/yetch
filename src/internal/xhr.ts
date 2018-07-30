@@ -189,6 +189,8 @@ class Xhr extends XhrBase {
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType
+const supportsMozChunkedArrayBuffer = supportsXhrResponseType(mozChunkedArrayBufferType)
+
 class MozChunkedArrayBufferXhr extends XhrBase {
   private _responseStream?: ReadableStream = undefined
   private _responseController?: ReadableStreamDefaultController = undefined
@@ -237,7 +239,7 @@ class MozChunkedArrayBufferXhr extends XhrBase {
 
 export function xhrFetch(request: Request): Promise<Response> {
   let xhr: XhrBase
-  if (support.stream && supportsXhrResponseType(mozChunkedArrayBufferType)) {
+  if (support.stream && supportsMozChunkedArrayBuffer) {
     xhr = new MozChunkedArrayBufferXhr(request)
   } else {
     xhr = new Xhr(request)

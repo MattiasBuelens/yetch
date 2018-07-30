@@ -23,7 +23,20 @@ const Response = root.Response!
 const AbortController = root.AbortController!
 
 export function nativeFetchSupported() {
-  return typeof fetch === 'function' && support.abort && support.stream && support.streamResponse
+  return typeof fetch === 'function' && support.abort && support.stream && support.streamResponse && support.url
+}
+
+// https://fetch.spec.whatwg.org/#scheme-fetch
+// We only use native fetch for HTTP(S) schemes, since there are still a lot of browser issues:
+// * Chrome does not yet support file://
+//   https://github.com/github/fetch/pull/92#issuecomment-140665932
+//   https://bugs.chromium.org/p/chromium/issues/detail?id=810400
+// * Some browsers do not yet support blob: or data:
+//   https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API#Browser_compatibility
+const nativeFetchProtocols = ['http:', 'https:']
+
+export function nativeFetchSupportsUrl(url: string): boolean {
+  return nativeFetchProtocols.indexOf(new root.URL(url, root.location.href).protocol) >= 0
 }
 
 // The ReadableStream class used by native's Request.body

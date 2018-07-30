@@ -1,14 +1,15 @@
 import {xhrFetch} from './xhr'
-import {nativeFetch, nativeFetchSupported} from './native'
+import {nativeFetch, nativeFetchSupported, nativeFetchSupportsUrl} from './native'
 import {Request, RequestInit} from './Request'
 import {Response} from './Response'
 
-type FetchImplementation = (request: Request) => Promise<Response>
-const fetchImplementation: FetchImplementation = nativeFetchSupported() ? nativeFetch : xhrFetch
+const supportsNativeFetch = nativeFetchSupported()
 
 export function fetch(input: Request | string, init?: RequestInit): Promise<Response> {
   return new Promise<Response>(resolve => {
-    resolve(fetchImplementation(new Request(input, init)))
+    const request = new Request(input, init)
+    const impl = supportsNativeFetch && nativeFetchSupportsUrl(request.url) ? nativeFetch : xhrFetch
+    resolve(impl(new Request(input, init)))
   })
 }
 

@@ -12,5 +12,14 @@ export const support = {
   stream: isReadableStreamConstructor(GlobalReadableStream),
   streamRequest: 'Request' in root && 'body' in root.Request!.prototype,
   streamResponse: 'Response' in root && 'body' in root.Response!.prototype,
-  abort: 'AbortController' in root && 'Request' in root && 'signal' in root.Request!.prototype
+  abort: 'AbortController' in root && 'Request' in root && 'signal' in root.Request!.prototype,
+  url:
+    'URL' in root &&
+    (function(url) {
+      try {
+        return new root.URL(url).toString() === url
+      } catch (e) {
+        return false
+      }
+    })('http://example.com/')
 }
