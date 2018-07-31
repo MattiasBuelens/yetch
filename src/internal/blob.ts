@@ -27,7 +27,7 @@ function shimWithBlobBuilder(BlobBuilderConstructor: typeof MSBlobBuilder): Blob
 /** @internal */
 export const createBlob: BlobConstructor = (() => {
   const Blob = root.Blob
-  if (typeof Blob === 'function') {
+  if (Blob) {
     try {
       new Blob()
       return shimWithBlobClass()
@@ -37,7 +37,7 @@ export const createBlob: BlobConstructor = (() => {
   }
 
   const BlobBuilder = root.BlobBuilder || root.WebKitBlobBuilder || root.MozBlobBuilder || root.MSBlobBuilder
-  if (typeof BlobBuilder === 'function') {
+  if (BlobBuilder) {
     return shimWithBlobBuilder(BlobBuilder)
   }
 
