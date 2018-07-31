@@ -59,10 +59,7 @@ const NativeRequestReadableStream: ReadableStreamConstructor | undefined = getNa
 function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<[string, string]> {
   const headers =
     headersInit instanceof HeadersPolyfill ? headersInit : new HeadersPolyfill(headersInit as HeadersInitPolyfill)
-
-  const list: Array<[string, string]> = []
-  headers.forEach((value, key) => list.push([key, value]))
-  return list
+  return headers._raw()
 }
 
 function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
