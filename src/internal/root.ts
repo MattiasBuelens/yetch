@@ -19,7 +19,7 @@ declare global {
   }
 
   interface Request {
-    body?: ReadableStream | null
+    body: ReadableStream | null
   }
 }
 

@@ -63,7 +63,7 @@ function collectHeaders(headersInit?: HeadersInit | HeadersInitPolyfill): Array<
 }
 
 function toNativeRequest(request: RequestPolyfill, controller: AbortController): Promise<Request> {
-  let bodyPromise: Promise<BodyInit>
+  let bodyPromise: Promise<BodyInit | null>
   if (request._bodyReadableStream) {
     if (support.streamRequest && NativeRequestReadableStream) {
       // Body is a stream, and native supports uploading a stream

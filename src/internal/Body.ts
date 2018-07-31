@@ -65,10 +65,10 @@ function consumed(body: Body): Promise<never> | undefined {
   body.bodyUsed = true
 }
 
-function fileReaderReady<T>(reader: FileReader): Promise<T> {
+function fileReaderReady<T extends string | ArrayBuffer>(reader: FileReader): Promise<T> {
   return new Promise((resolve, reject) => {
     reader.onload = () => {
-      resolve(reader.result)
+      resolve(reader.result! as T)
     }
     reader.onerror = () => {
       reject(reader.error)

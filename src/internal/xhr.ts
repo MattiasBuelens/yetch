@@ -146,7 +146,11 @@ abstract class XhrBase {
       request.signal.removeEventListener('abort', abortXhr)
     }
 
-    xhr.send(body || null)
+    if (body) {
+      xhr.send(body)
+    } else {
+      xhr.send()
+    }
   }
 
   protected _abort() {
