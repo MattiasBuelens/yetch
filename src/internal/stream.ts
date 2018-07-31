@@ -6,6 +6,25 @@ import {
   ReadableStreamSource
 } from 'whatwg-streams'
 
+declare module 'whatwg-streams' {
+  // TODO Move to upstream
+  interface ReadableStream<R = ArrayBufferView> {
+    cancel(reason?: any): Promise<void>
+  }
+  interface ReadableStreamDefaultReader<R = ArrayBufferView> {
+    cancel(reason?: any): Promise<void>
+  }
+  interface ReadableStreamBYOBReader<R = ArrayBufferView> {
+    cancel(reason?: any): Promise<void>
+  }
+  interface WritableStream<W = ArrayBufferView> {
+    abort(reason?: any): Promise<void>
+  }
+  interface WritableStreamDefaultWriter<W = ArrayBufferView> {
+    abort(reason?: any): Promise<void>
+  }
+}
+
 export type ReadableStream<R = Uint8Array> = WhatWGReadableStream<R>
 
 export interface ReadableStreamConstructor<T extends ReadableStream<any> = ReadableStream<any>> {
