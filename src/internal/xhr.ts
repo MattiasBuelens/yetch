@@ -136,7 +136,7 @@ abstract class XhrBase {
       xhr.responseType = responseType as XMLHttpRequestResponseType
     }
 
-    request.headers._raw().forEach(([name, value]) => {
+    request.headers.asList().forEach(([name, value]) => {
       xhr.setRequestHeader(name, value)
     })
 

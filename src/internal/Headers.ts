@@ -47,7 +47,7 @@ export class Headers implements Iterable<[string, string]> {
     this._map = {}
 
     if (headers instanceof Headers) {
-      headers._raw().forEach(([name, value]) => {
+      headers.asList().forEach(([name, value]) => {
         this.append(name, value)
       })
     } else if (Array.isArray(headers)) {
@@ -131,8 +131,13 @@ export class Headers implements Iterable<[string, string]> {
     return iteratorFor(items)
   }
 
-  /** @internal */
-  _raw(): Array<[string, string]> {
+  /**
+   * Returns the headers as a list of tuples of header names and header values,
+   * with the original case for the header names.
+   *
+   * Warning: non-standard extension.
+   */
+  asList(): Array<[string, string]> {
     const list: Array<[string, string]> = []
     for (const key in this._map) {
       if (this._map.hasOwnProperty(key)) {
