@@ -9,7 +9,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/whatwg-streams": "^0.0.6",
-    "tslib": "^1.9.1"
+    "tslib": "^1.9.3"
   },
   "devDependencies": {
     "@types/node": "^10.1.2",
@@ -29,7 +29,7 @@
     "rollup-plugin-node-resolve": "^3.3.0",
     "rollup-plugin-typescript2": "^0.14.0",
     "rollup-plugin-uglify": "^4.0.0",
-    "typescript": "^2.8.3",
+    "typescript": "^3.0.1",
     "url-search-params": "0.6.1"
   },
   "files": [
