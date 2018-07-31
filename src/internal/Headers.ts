@@ -41,10 +41,10 @@ export type HeadersInit = Headers | Iterable<[string, string]> | {[name: string]
 
 export class Headers implements Iterable<[string, string]> {
   // Map of lower-case header name to [original header name, header value]
-  private map: {[name: string]: [string, string]}
+  private _map: {[name: string]: [string, string]}
 
   constructor(headers?: HeadersInit) {
-    this.map = {}
+    this._map = {}
 
     if (headers instanceof Headers) {
       headers._raw().forEach(([name, value]) => {
@@ -69,40 +69,40 @@ export class Headers implements Iterable<[string, string]> {
     name = normalizeName(name)
     value = normalizeValue(value)
     const key = name.toLowerCase()
-    if (this.map.hasOwnProperty(key)) {
-      const entry = this.map[key]
+    if (this._map.hasOwnProperty(key)) {
+      const entry = this._map[key]
       const oldValue = entry[1]
       entry[1] = oldValue ? oldValue + ', ' + value : value
     } else {
-      this.map[key] = [name, value]
+      this._map[key] = [name, value]
     }
   }
 
   delete(name: string): void {
     const key = normalizeName(name).toLowerCase()
-    delete this.map[key]
+    delete this._map[key]
   }
 
   get(name: string): string | null {
     const key = normalizeName(name).toLowerCase()
-    return this.map.hasOwnProperty(key) ? this.map[key][1] : null
+    return this._map.hasOwnProperty(key) ? this._map[key][1] : null
   }
 
   has(name: string): boolean {
     const key = normalizeName(name).toLowerCase()
-    return this.map.hasOwnProperty(key)
+    return this._map.hasOwnProperty(key)
   }
 
   set(name: string, value: string): void {
     name = normalizeName(name)
     const key = name.toLowerCase()
-    this.map[key] = [name, normalizeValue(value)]
+    this._map[key] = [name, normalizeValue(value)]
   }
 
   forEach(callback: (this: typeof thisArg, value: string, key: string, headers: Headers) => any, thisArg?: any): void {
-    for (const name in this.map) {
-      if (this.map.hasOwnProperty(name)) {
-        callback.call(thisArg, this.map[name][1], name, this)
+    for (const name in this._map) {
+      if (this._map.hasOwnProperty(name)) {
+        callback.call(thisArg, this._map[name][1], name, this)
       }
     }
   }
@@ -134,9 +134,9 @@ export class Headers implements Iterable<[string, string]> {
   /** @internal */
   _raw(): Array<[string, string]> {
     const list: Array<[string, string]> = []
-    for (const key in this.map) {
-      if (this.map.hasOwnProperty(key)) {
-        const [name, value] = this.map[key]
+    for (const key in this._map) {
+      if (this._map.hasOwnProperty(key)) {
+        const [name, value] = this._map[key]
         list.push([name, value])
       }
     }
