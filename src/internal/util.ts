@@ -1,12 +1,10 @@
-import {TypedArray} from './Body'
-
 /** @internal */
 export function noOp(): void {
   return
 }
 
 /** @internal */
-export function concatUint8Array(arrays: TypedArray[]): Uint8Array {
+export function concatUint8Array(arrays: Uint8Array[]): Uint8Array {
   let totalLength = 0
   for (let array of arrays) {
     totalLength += array.byteLength
