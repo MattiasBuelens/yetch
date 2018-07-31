@@ -1,9 +1,20 @@
 import {support} from './support'
 import {Headers} from './Headers'
-import {concatUint8Array, noOp, TypedArray} from './util'
+import {concatUint8Array, noOp} from './util'
 import {isReadableStream, monitorStream, ReadableStream, readArrayBufferAsStream} from './stream'
 import {BlobPart, createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
+
+export type TypedArray =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array
 
 export type BodyInit =
   | Blob
