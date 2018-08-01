@@ -36,7 +36,12 @@ export function nativeFetchSupported() {
 const nativeFetchProtocols = ['http:', 'https:']
 
 export function nativeFetchSupportsUrl(url: string): boolean {
-  return nativeFetchProtocols.indexOf(new root.URL(url, root.location.href).protocol) >= 0
+  try {
+    return nativeFetchProtocols.indexOf(new root.URL(url, root.location.href).protocol) >= 0
+  } catch {
+    // invalid URL
+    return false
+  }
 }
 
 // The ReadableStream class used by native's Request.body
