@@ -38,6 +38,15 @@ function supportsXhrResponseType(type: XhrResponseType): boolean {
   return false
 }
 
+// https://xhr.spec.whatwg.org/#states
+const enum XhrReadyState {
+  UNSENT = 0,
+  OPENED = 1,
+  HEADERS_RECEIVED = 2,
+  LOADING = 3,
+  DONE = 4
+}
+
 abstract class XhrBase {
   protected readonly _request: Request
   protected readonly _xhr: XMLHttpRequest
@@ -110,7 +119,7 @@ abstract class XhrBase {
     }
 
     xhr.onreadystatechange = () => {
-      if (xhr.readyState === xhr.HEADERS_RECEIVED) {
+      if (xhr.readyState === XhrReadyState.HEADERS_RECEIVED) {
         const headers = parseHeaders(xhr.getAllResponseHeaders() || '')
         const options: ResponseInit = {
           status: xhr.status,
