@@ -196,7 +196,7 @@ export function cloneBody(body: Body): InternalBodyInit {
     body._bodyReadableStream = stream1
     return stream2
   } else {
-    return body._bodyInit as BodyInit
+    return body._bodyInit
   }
 }
 
