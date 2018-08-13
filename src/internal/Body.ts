@@ -101,12 +101,8 @@ function readBlobAsText(blob: Blob): Promise<string> {
   return promise
 }
 
-function createBlobWithType(blobParts: BlobPart[], contentType?: string | null | undefined): Blob {
-  return createBlob(blobParts, {type: contentType || ''})
-}
-
 function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
-  return readBlobAsText(createBlobWithType([buf]))
+  return readBlobAsText(createBlob([buf]))
 }
 
 function readTextAsArrayBuffer(text: string): Promise<ArrayBuffer> {
@@ -128,7 +124,7 @@ function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
 }
 
 function readStreamAsBlob(readable: ReadableStream, contentType?: string | null | undefined): Promise<Blob> {
-  return readAllChunks(readable).then(chunks => createBlobWithType(chunks, contentType))
+  return readAllChunks(readable).then(chunks => createBlob(chunks, {type: contentType || ''}))
 }
 
 function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
@@ -339,7 +335,7 @@ if (support.blob) {
     if (this._bodyBlob) {
       return Promise.resolve(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(createBlobWithType([this._bodyArrayBuffer], this._bodyMimeType))
+      return Promise.resolve(createBlob([this._bodyArrayBuffer], {type: this._bodyMimeType}))
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream, this._bodyMimeType)
     } else if (this._bodyPromise) {
@@ -347,7 +343,7 @@ if (support.blob) {
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
-      return Promise.resolve(createBlobWithType([this._bodyText!], this._bodyMimeType))
+      return Promise.resolve(createBlob([this._bodyText!], {type: this._bodyMimeType}))
     }
   }
 }
