@@ -57,7 +57,7 @@ function utf8encode(string: string): string {
 
 /*--------------------------------------------------------------------------*/
 
-let byteArray: number[]
+let byteArray: ReadonlyArray<number>
 let byteCount: number
 let byteIndex: number
 
@@ -139,8 +139,8 @@ function decodeSymbol(): number | false {
   throw new Error('Invalid UTF-8 detected')
 }
 
-function utf8decoderaw(bytes: number[]): number[] {
-  byteArray = bytes.slice()
+function utf8decoderaw(bytes: ReadonlyArray<number>): number[] {
+  byteArray = bytes
   byteCount = byteArray.length
   byteIndex = 0
   const codePoints: number[] = []
