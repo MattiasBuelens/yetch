@@ -7,7 +7,7 @@
 
 import {ucs2decode, ucs2encode} from './ucs2'
 
-var stringFromCharCode = String.fromCharCode
+const stringFromCharCode = String.fromCharCode
 
 function checkScalarValue(codePoint: number) {
   if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
@@ -25,7 +25,7 @@ function encodeCodePoint(codePoint: number): string {
     // 1-byte sequence
     return stringFromCharCode(codePoint)
   }
-  var symbol = ''
+  let symbol = ''
   if ((codePoint & 0xfffff800) == 0) {
     // 2-byte sequence
     symbol = stringFromCharCode(((codePoint >> 6) & 0x1f) | 0xc0)
@@ -45,11 +45,11 @@ function encodeCodePoint(codePoint: number): string {
 }
 
 function utf8encode(string: string): string {
-  var codePoints = ucs2decode(string)
-  var length = codePoints.length
-  var index = -1
-  var codePoint: number
-  var byteString = ''
+  const codePoints = ucs2decode(string)
+  const length = codePoints.length
+  let index = -1
+  let codePoint: number
+  let byteString = ''
   while (++index < length) {
     codePoint = codePoints[index]
     byteString += encodeCodePoint(codePoint)
@@ -64,7 +64,7 @@ function readContinuationByte(): number {
     throw Error('Invalid byte index')
   }
 
-  var continuationByte = byteArray[byteIndex] & 0xff
+  const continuationByte = byteArray[byteIndex] & 0xff
   byteIndex++
 
   if ((continuationByte & 0xc0) == 0x80) {
@@ -76,11 +76,11 @@ function readContinuationByte(): number {
 }
 
 function decodeSymbol(): number | false {
-  var byte1: number
-  var byte2: number
-  var byte3: number
-  var byte4: number
-  var codePoint: number
+  let byte1: number
+  let byte2: number
+  let byte3: number
+  let byte4: number
+  let codePoint: number
 
   if (byteIndex > byteCount) {
     throw Error('Invalid byte index')
@@ -137,15 +137,15 @@ function decodeSymbol(): number | false {
   throw Error('Invalid UTF-8 detected')
 }
 
-var byteArray: number[]
-var byteCount: number
-var byteIndex: number
+let byteArray: number[]
+let byteCount: number
+let byteIndex: number
 function utf8decode(byteString: string): string {
   byteArray = ucs2decode(byteString)
   byteCount = byteArray.length
   byteIndex = 0
-  var codePoints: number[] = []
-  var tmp: number | false
+  const codePoints: number[] = []
+  let tmp: number | false
   while ((tmp = decodeSymbol()) !== false) {
     codePoints.push(tmp)
   }
