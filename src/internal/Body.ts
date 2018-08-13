@@ -108,8 +108,7 @@ function readArrayBufferAsText(buf: ArrayBuffer): string {
   if (support.encoding) {
     return new root.TextDecoder!('utf-8').decode(buf)
   } else {
-    const utf8EncodedBytes = toByteArray(new Uint8Array(buf))
-    return ucs2encode(utf8decoderaw(utf8EncodedBytes))
+    return ucs2encode(utf8decoderaw(new Uint8Array(buf)))
   }
 }
 
@@ -117,8 +116,7 @@ function readTextAsArrayBuffer(text: string): ArrayBuffer {
   if (support.encoding) {
     return new root.TextEncoder!().encode(text).buffer
   } else {
-    const utf8EncodedBytes = utf8encoderaw(ucs2decode(text))
-    return new Uint8Array(utf8EncodedBytes).buffer
+    return new Uint8Array(utf8encoderaw(ucs2decode(text))).buffer
   }
 }
 
@@ -176,10 +174,6 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
 
 function toUint8Array(view: ArrayBufferView): Uint8Array {
   return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
-}
-
-function toByteArray(uint8: Uint8Array): number[] {
-  return [].slice.call(uint8)
 }
 
 function decode(body: string): FormData {
