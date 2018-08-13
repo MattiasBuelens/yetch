@@ -5,7 +5,7 @@
  * https://github.com/mathiasbynens/utf8.js/blob/v3.0.0/utf8.js
  */
 
-var stringFromCharCode = String.fromCharCode
+import {fromCodeUnits} from '../util'
 
 // Taken from https://mths.be/punycode
 export function ucs2decode(string: string): number[] {
@@ -37,18 +37,14 @@ export function ucs2decode(string: string): number[] {
 
 // Taken from https://mths.be/punycode
 export function ucs2encode(array: number[]): string {
-  var length = array.length
-  var index = -1
-  var value: number
-  var output = ''
-  while (++index < length) {
-    value = array[index]
+  var output: number[] = []
+  for (var value of array) {
     if (value > 0xffff) {
       value -= 0x10000
-      output += stringFromCharCode(((value >>> 10) & 0x3ff) | 0xd800)
+      output.push(((value >>> 10) & 0x3ff) | 0xd800)
       value = 0xdc00 | (value & 0x3ff)
     }
-    output += stringFromCharCode(value)
+    output.push(value)
   }
-  return output
+  return fromCodeUnits(output)
 }
