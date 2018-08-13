@@ -1,3 +1,10 @@
+/*
+ * utf8.js by Mathias Bynens
+ * License: MIT
+ *
+ * https://github.com/mathiasbynens/utf8.js/blob/v3.0.0/utf8.js
+ */
+
 var stringFromCharCode = String.fromCharCode
 
 // Taken from https://mths.be/punycode
