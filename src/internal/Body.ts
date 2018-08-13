@@ -166,6 +166,10 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
   }
 }
 
+function toUint8Array(view: ArrayBufferView): Uint8Array {
+  return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
+}
+
 function decode(body: string): FormData {
   const form = new FormData()
   body
@@ -242,11 +246,11 @@ export class Body {
       this._bodyFormData = body
     } else if (support.searchParams && isURLSearchParams(body)) {
       this._bodyText = body.toString()
-    } else if (support.arrayBuffer && support.blob && isDataView(body)) {
-      this._bodyArrayBuffer = bufferClone(body.buffer)
-      // IE 10-11 can't handle a DataView body.
-      this._bodyInit = createBlobWithType([this._bodyArrayBuffer])
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
+      // IE 10-11 can't handle a DataView body.
+      if (isDataView(body)) {
+        this._bodyInit = toUint8Array(body)
+      }
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
       // transfer stream and monitor when disturbed
