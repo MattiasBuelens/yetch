@@ -16,6 +16,9 @@ declare global {
     MozBlobBuilder?: typeof MSBlobBuilder
     MSBlobBuilder?: typeof MSBlobBuilder
     WebKitBlobBuilder?: typeof MSBlobBuilder
+
+    TextDecoder?: typeof TextDecoder
+    TextEncoder?: typeof TextEncoder
   }
 
   interface Request {

@@ -2,8 +2,11 @@ import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, noOp} from './util'
 import {isReadableStream, monitorStream, ReadableStream, readArrayBufferAsStream} from './stream'
-import {BlobPart, createBlob} from './blob'
+import {createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
+import {utf8decoderaw, utf8encoderaw} from './vendor/utf8'
+import {ucs2decode, ucs2encode} from './vendor/ucs2'
+import {root} from './root'
 
 export type TypedArray =
   | Int8Array
@@ -101,12 +104,22 @@ function readBlobAsText(blob: Blob): Promise<string> {
   return promise
 }
 
-function createBlobWithType(blobParts: BlobPart[], contentType?: string | null | undefined): Blob {
-  return createBlob(blobParts, {type: contentType || ''})
+function readArrayBufferAsText(buf: ArrayBuffer): string {
+  if (support.encoding) {
+    return new root.TextDecoder!('utf-8').decode(buf)
+  } else {
+    const utf8EncodedBytes = toByteArray(new Uint8Array(buf))
+    return ucs2encode(utf8decoderaw(utf8EncodedBytes))
+  }
 }
 
-function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
-  return readBlobAsText(createBlobWithType([buf]))
+function readTextAsArrayBuffer(text: string): ArrayBuffer {
+  if (support.encoding) {
+    return new root.TextEncoder!().encode(text).buffer
+  } else {
+    const utf8EncodedBytes = utf8encoderaw(ucs2decode(text))
+    return new Uint8Array(utf8EncodedBytes).buffer
+  }
 }
 
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
@@ -124,7 +137,7 @@ function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
 }
 
 function readStreamAsBlob(readable: ReadableStream, contentType?: string | null | undefined): Promise<Blob> {
-  return readAllChunks(readable).then(chunks => createBlobWithType(chunks, contentType))
+  return readAllChunks(readable).then(chunks => createBlob(chunks, {type: contentType || ''}))
 }
 
 function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer> {
@@ -132,8 +145,7 @@ function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer>
 }
 
 function readStreamAsText(readable: ReadableStream): Promise<string> {
-  // TODO Use TransformStream and TextDecoder if supported
-  return readStreamAsBlob(readable).then(readBlobAsText)
+  return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
 }
 
 function bufferClone(buf: ArrayBuffer | ArrayBufferView): ArrayBuffer {
@@ -160,6 +172,14 @@ function arrayBufferViewClone(buf: ArrayBufferView): ArrayBuffer {
     view.set(new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
     return view.buffer
   }
+}
+
+function toUint8Array(view: ArrayBufferView): Uint8Array {
+  return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
+}
+
+function toByteArray(uint8: Uint8Array): number[] {
+  return [].slice.call(uint8)
 }
 
 function decode(body: string): FormData {
@@ -238,11 +258,11 @@ export class Body {
       this._bodyFormData = body
     } else if (support.searchParams && isURLSearchParams(body)) {
       this._bodyText = body.toString()
-    } else if (support.arrayBuffer && support.blob && isDataView(body)) {
-      this._bodyArrayBuffer = bufferClone(body.buffer)
-      // IE 10-11 can't handle a DataView body.
-      this._bodyInit = createBlobWithType([this._bodyArrayBuffer])
     } else if (support.arrayBuffer && (isArrayBuffer(body) || isArrayBufferView(body))) {
+      // IE 10-11 can't handle a DataView body.
+      if (isDataView(body)) {
+        this._bodyInit = toUint8Array(body)
+      }
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
       // transfer stream and monitor when disturbed
@@ -300,7 +320,7 @@ export class Body {
     if (this._bodyBlob) {
       return readBlobAsText(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return readArrayBufferAsText(this._bodyArrayBuffer)
+      return Promise.resolve(this._bodyArrayBuffer).then(readArrayBufferAsText)
     } else if (this._bodyReadableStream) {
       return readStreamAsText(this._bodyReadableStream)
     } else if (this._bodyPromise) {
@@ -331,7 +351,7 @@ if (support.blob) {
     if (this._bodyBlob) {
       return Promise.resolve(this._bodyBlob)
     } else if (this._bodyArrayBuffer) {
-      return Promise.resolve(createBlobWithType([this._bodyArrayBuffer], this._bodyMimeType))
+      return Promise.resolve(createBlob([this._bodyArrayBuffer], {type: this._bodyMimeType}))
     } else if (this._bodyReadableStream) {
       return readStreamAsBlob(this._bodyReadableStream, this._bodyMimeType)
     } else if (this._bodyPromise) {
@@ -339,13 +359,17 @@ if (support.blob) {
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as Blob'))
     } else {
-      return Promise.resolve(createBlobWithType([this._bodyText!], this._bodyMimeType))
+      return Promise.resolve(createBlob([this._bodyText!], {type: this._bodyMimeType}))
     }
   }
+}
 
+if (support.arrayBuffer) {
   Body.prototype.arrayBuffer = function(this: Body): Promise<ArrayBuffer> {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+    } else if (this._bodyBlob) {
+      return consumed(this) || readBlobAsArrayBuffer(this._bodyBlob)
     } else if (this._bodyReadableStream) {
       return readStreamAsArrayBuffer(this._bodyReadableStream)
     } else if (this._bodyPromise) {
@@ -353,7 +377,7 @@ if (support.blob) {
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as ArrayBuffer'))
     } else {
-      return this.blob!().then(readBlobAsArrayBuffer)
+      return Promise.resolve(this._bodyText!).then(readTextAsArrayBuffer)
     }
   }
 }
