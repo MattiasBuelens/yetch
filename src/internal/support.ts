@@ -13,6 +13,7 @@ export const support = {
   streamRequest: 'Request' in root && 'body' in root.Request!.prototype,
   streamResponse: 'Response' in root && 'body' in root.Response!.prototype,
   abort: 'AbortController' in root && 'Request' in root && 'signal' in root.Request!.prototype,
+  encoding: 'TextEncoder' in root && 'TextDecoder' in root,
   url:
     'URL' in root &&
     (function(url) {

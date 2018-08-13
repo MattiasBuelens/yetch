@@ -6,6 +6,7 @@ import {createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 import {utf8decoderaw, utf8encoderaw} from './vendor/utf8'
 import {ucs2decode, ucs2encode} from './vendor/ucs2'
+import {root} from './root'
 
 export type TypedArray =
   | Int8Array
@@ -104,13 +105,21 @@ function readBlobAsText(blob: Blob): Promise<string> {
 }
 
 function readArrayBufferAsText(buf: ArrayBuffer): string {
-  const utf8EncodedBytes = toByteArray(new Uint8Array(buf))
-  return ucs2encode(utf8decoderaw(utf8EncodedBytes))
+  if (support.encoding) {
+    return new root.TextDecoder!('utf-8').decode(buf)
+  } else {
+    const utf8EncodedBytes = toByteArray(new Uint8Array(buf))
+    return ucs2encode(utf8decoderaw(utf8EncodedBytes))
+  }
 }
 
 function readTextAsArrayBuffer(text: string): ArrayBuffer {
-  const utf8EncodedBytes = utf8encoderaw(ucs2decode(text))
-  return new Uint8Array(utf8EncodedBytes).buffer
+  if (support.encoding) {
+    return new root.TextEncoder!().encode(text).buffer
+  } else {
+    const utf8EncodedBytes = utf8encoderaw(ucs2decode(text))
+    return new Uint8Array(utf8EncodedBytes).buffer
+  }
 }
 
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
@@ -136,7 +145,6 @@ function readStreamAsArrayBuffer(readable: ReadableStream): Promise<ArrayBuffer>
 }
 
 function readStreamAsText(readable: ReadableStream): Promise<string> {
-  // TODO Use TransformStream and TextDecoder if supported
   return readStreamAsArrayBuffer(readable).then(readArrayBufferAsText)
 }
 
