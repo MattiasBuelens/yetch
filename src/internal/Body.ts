@@ -109,6 +109,10 @@ function readArrayBufferAsText(buf: ArrayBuffer): Promise<string> {
   return readBlobAsText(createBlobWithType([buf]))
 }
 
+function readTextAsArrayBuffer(text: string): Promise<ArrayBuffer> {
+  return readBlobAsArrayBuffer(createBlob([text]))
+}
+
 function readAllChunks(readable: ReadableStream): Promise<Array<Uint8Array>> {
   const reader = readable.getReader()
   const chunks: Uint8Array[] = []
@@ -342,10 +346,14 @@ if (support.blob) {
       return Promise.resolve(createBlobWithType([this._bodyText!], this._bodyMimeType))
     }
   }
+}
 
+if (support.arrayBuffer) {
   Body.prototype.arrayBuffer = function(this: Body): Promise<ArrayBuffer> {
     if (this._bodyArrayBuffer) {
       return consumed(this) || Promise.resolve(this._bodyArrayBuffer)
+    } else if (this._bodyBlob) {
+      return consumed(this) || readBlobAsArrayBuffer(this._bodyBlob)
     } else if (this._bodyReadableStream) {
       return readStreamAsArrayBuffer(this._bodyReadableStream)
     } else if (this._bodyPromise) {
@@ -353,7 +361,7 @@ if (support.blob) {
     } else if (this._bodyFormData) {
       return Promise.reject(new Error('could not read FormData body as ArrayBuffer'))
     } else {
-      return this.blob!().then(readBlobAsArrayBuffer)
+      return readTextAsArrayBuffer(this._bodyText!)
     }
   }
 }

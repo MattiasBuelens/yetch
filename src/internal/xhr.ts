@@ -177,7 +177,7 @@ class Xhr extends XhrBase {
   }
 
   protected _getResponseType(): XhrResponseType {
-    return support.blob ? 'blob' : ''
+    return support.blob ? 'blob' : support.arrayBuffer ? 'arraybuffer' : ''
   }
 
   protected _onHeadersReceived(init: ResponseInit): void {
