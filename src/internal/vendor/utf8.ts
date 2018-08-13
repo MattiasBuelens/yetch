@@ -10,7 +10,7 @@ import {fromCodeUnits} from '../util'
 
 function checkScalarValue(codePoint: number) {
   if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
-    throw Error('Lone surrogate U+' + codePoint.toString(16).toUpperCase() + ' is not a scalar value')
+    throw new Error('Lone surrogate U+' + codePoint.toString(16).toUpperCase() + ' is not a scalar value')
   }
 }
 
@@ -63,7 +63,7 @@ let byteIndex: number
 
 function readContinuationByte(): number {
   if (byteIndex >= byteCount) {
-    throw Error('Invalid byte index')
+    throw new Error('Invalid byte index')
   }
 
   const continuationByte = byteArray[byteIndex] & 0xff
@@ -74,7 +74,7 @@ function readContinuationByte(): number {
   }
 
   // If we end up here, it’s not a continuation byte
-  throw Error('Invalid continuation byte')
+  throw new Error('Invalid continuation byte')
 }
 
 function decodeSymbol(): number | false {
@@ -85,7 +85,7 @@ function decodeSymbol(): number | false {
   let codePoint: number
 
   if (byteIndex > byteCount) {
-    throw Error('Invalid byte index')
+    throw new Error('Invalid byte index')
   }
 
   if (byteIndex === byteCount) {
@@ -121,7 +121,7 @@ function decodeSymbol(): number | false {
       checkScalarValue(codePoint)
       return codePoint
     } else {
-      throw Error('Invalid continuation byte')
+      throw new Error('Invalid continuation byte')
     }
   }
 
@@ -136,7 +136,7 @@ function decodeSymbol(): number | false {
     }
   }
 
-  throw Error('Invalid UTF-8 detected')
+  throw new Error('Invalid UTF-8 detected')
 }
 
 function utf8decoderaw(bytes: number[]): number[] {
