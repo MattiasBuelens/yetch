@@ -11,6 +11,7 @@ export interface RequestInit {
   method?: string
   mode?: RequestMode
   referrer?: string
+  referrerPolicy?: ReferrerPolicy
   signal?: AbortSignal
   onprogress?: ProgressCallback
 }
@@ -33,10 +34,12 @@ export class Request extends Body {
   method: string
   mode: RequestMode
   referrer: string
+  referrerPolicy: ReferrerPolicy
   signal: AbortSignal
   url: string
   onprogress: ProgressCallback | null
 
+  // https://fetch.spec.whatwg.org/#dom-request
   constructor(input: Request | string, options?: RequestInit) {
     options = options || {}
     let url: string
@@ -45,6 +48,8 @@ export class Request extends Body {
     let headers: Headers | undefined
     let method: string
     let mode: RequestMode
+    let referrer: string
+    let referrerPolicy: ReferrerPolicy
     let signal: AbortSignal | null
     let onprogress: ProgressCallback | null
 
@@ -59,6 +64,8 @@ export class Request extends Body {
       }
       method = input.method
       mode = input.mode
+      referrer = input.referrer
+      referrerPolicy = input.referrerPolicy
       signal = input.signal
       onprogress = input.onprogress
       if (!body && input._bodyInit != null) {
@@ -70,6 +77,8 @@ export class Request extends Body {
       credentials = 'same-origin'
       method = 'GET'
       mode = 'cors'
+      referrer = 'about:client'
+      referrerPolicy = ''
       signal = null
       onprogress = null
     }
@@ -77,6 +86,15 @@ export class Request extends Body {
     if (options.headers || !headers) {
       headers = new Headers(options.headers)
     }
+
+    // 14. If init is not empty, then:
+    // 14.4. Set request's referrer to "client"
+    // 14.5. Set request's referrer policy to the empty string.
+    if (options) {
+      referrer = 'about:client'
+      referrerPolicy = ''
+    }
+
     super(body, headers)
     this.url = url
     this.headers = headers
@@ -84,7 +102,8 @@ export class Request extends Body {
     this.method = normalizeMethod(options.method || method)
     this.mode = options.mode || mode
     this.signal = options.signal || signal || createDefaultAbortSignal()
-    this.referrer = ''
+    this.referrer = options.referrer !== undefined ? options.referrer : referrer
+    this.referrerPolicy = options.referrerPolicy !== undefined ? options.referrerPolicy : referrerPolicy
     this.onprogress = options.onprogress || onprogress
 
     if ((this.method === 'GET' || this.method === 'HEAD') && body) {

@@ -95,6 +95,7 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
       method: request.method,
       mode: request.mode,
       referrer: request.referrer,
+      referrerPolicy: request.referrerPolicy,
       signal: controller.signal
     })
   })
