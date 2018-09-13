@@ -64,22 +64,14 @@ export type ReadProgressCallback = (result: IteratorResult<Uint8Array>) => void
 
 class ReaderSource implements ReadableStreamSource<Uint8Array> {
   private readonly _reader: ReadableStreamDefaultReader<Uint8Array>
-  private _disturbed: boolean = false
-  private _onDisturbed?: () => void
   private _onRead?: ReadProgressCallback
 
-  constructor(
-    reader: ReadableStreamDefaultReader<Uint8Array>,
-    onDisturbed?: () => void,
-    onRead?: ReadProgressCallback
-  ) {
+  constructor(reader: ReadableStreamDefaultReader<Uint8Array>, onRead?: ReadProgressCallback) {
     this._reader = reader
-    this._onDisturbed = onDisturbed
     this._onRead = onRead
   }
 
   pull(c: ReadableStreamDefaultController<Uint8Array>) {
-    this._setDisturbed()
     return this._reader.read().then(result => {
       if (this._onRead) {
         this._onRead(result)
@@ -93,19 +85,7 @@ class ReaderSource implements ReadableStreamSource<Uint8Array> {
   }
 
   cancel(reason: any) {
-    this._setDisturbed()
     return this._reader.cancel(reason)
-  }
-
-  private _setDisturbed() {
-    if (this._disturbed) {
-      return
-    }
-    this._disturbed = true
-    if (this._onDisturbed) {
-      this._onDisturbed()
-      this._onDisturbed = undefined!
-    }
   }
 }
 
@@ -124,10 +104,9 @@ export function convertStream<T extends ReadableStream>(
 export function monitorStream<T extends ReadableStream>(
   ctor: ReadableStreamConstructor<T>,
   stream: ReadableStream,
-  onDisturbed?: () => void,
-  onProgress?: ReadProgressCallback
+  onProgress: ReadProgressCallback
 ): T & ReadableStream {
-  return new ctor(new ReaderSource(stream.getReader(), onDisturbed, onProgress), {highWaterMark: 0})
+  return new ctor(new ReaderSource(stream.getReader(), onProgress), {highWaterMark: 0})
 }
 
 class ArrayBufferSource implements ReadableStreamSource<Uint8Array> {

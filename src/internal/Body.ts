@@ -1,7 +1,7 @@
 import {support} from './support'
 import {Headers} from './Headers'
 import {concatUint8Array, noOp} from './util'
-import {isReadableStream, monitorStream, ReadableStream, readArrayBufferAsStream} from './stream'
+import {convertStream, isReadableStream, ReadableStream, readArrayBufferAsStream} from './stream'
 import {createBlob} from './blob'
 import {GlobalReadableStream} from './globals'
 import {utf8decoderaw, utf8encoderaw} from './vendor/utf8'
@@ -259,11 +259,7 @@ export class Body {
       }
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
-      // transfer stream and monitor when disturbed
-      this._bodyReadableStream = monitorStream(GlobalReadableStream, body, () => {
-        // set bodyUsed to true when stream becomes disturbed (read or canceled)
-        this.bodyUsed = true
-      })
+      this._bodyReadableStream = convertStream(GlobalReadableStream, body)
     } else {
       throw new Error('unsupported BodyInit type')
     }

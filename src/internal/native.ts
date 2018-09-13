@@ -157,7 +157,7 @@ function monitorStreamProgress(stream: ReadableStream, onprogress: ProgressCallb
     }
     onprogress(loaded, total)
   }
-  return monitorStream(GlobalReadableStream, stream, undefined, onRead)
+  return monitorStream(GlobalReadableStream, stream, onRead)
 }
 
 function monitorBlobProgress(promise: PromiseLike<Blob>, onprogress: ProgressCallback, total?: number): Promise<Blob> {
