@@ -206,6 +206,7 @@ export function cloneBody(body: Body): InternalBodyInit {
       throw new Error('could not clone ReadableStream body')
     }
     const [stream1, stream2] = body._bodyReadableStream.tee()
+    body.body = stream1
     body._bodyInit = stream1
     body._bodyReadableStream = stream1
     return stream2
@@ -260,6 +261,7 @@ export class Body {
       this._bodyArrayBuffer = bufferClone(body)
     } else if (support.stream && isReadableStream(body)) {
       this._bodyReadableStream = convertStream(GlobalReadableStream, body)
+      this._bodyInit = this._bodyReadableStream
     } else {
       throw new Error('unsupported BodyInit type')
     }
