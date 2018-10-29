@@ -89,7 +89,10 @@ function toNativeRequest(request: RequestPolyfill, controller: AbortController):
 
   return bodyPromise.then(bodyInit => {
     return new Request(request.url, {
-      body: bodyInit,
+      // Edge 15/16 incorrectly throws an error when passing null body to GET or HEAD request (fixed in Edge 17)
+      // Avoid this bug by passing undefined instead of null
+      // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/13498680/
+      body: bodyInit || undefined,
       credentials: request.credentials,
       headers: collectHeaders(request.headers),
       method: request.method,
