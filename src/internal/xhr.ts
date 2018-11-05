@@ -185,7 +185,7 @@ class Xhr extends XhrBase {
   protected _onHeadersReceived(init: ResponseInit): void {
     this._bodyPromise = new Promise<BodyInit>((resolve, reject) => {
       this._resolveBody = resolve
-      this._rejectBody = resolve
+      this._rejectBody = reject
     })
     this._resolveResponse(new (Response as InternalResponse)(this._bodyPromise, init))
   }
