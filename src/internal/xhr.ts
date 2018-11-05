@@ -53,6 +53,7 @@ abstract class XhrBase {
   private _responsePromise: Promise<Response>
   protected _resolveResponse!: (response: Response) => void
   protected _rejectResponse!: (reason: any) => void
+  private _didHeadersReceived: boolean = false
 
   protected constructor(request: Request) {
     this._request = request
@@ -119,7 +120,7 @@ abstract class XhrBase {
     }
 
     xhr.onreadystatechange = () => {
-      if (xhr.readyState === XhrReadyState.HEADERS_RECEIVED) {
+      if (xhr.readyState >= XhrReadyState.HEADERS_RECEIVED && !this._didHeadersReceived) {
         const headers = parseHeaders(xhr.getAllResponseHeaders() || '')
         const options: ResponseInit = {
           status: xhr.status,
@@ -127,6 +128,7 @@ abstract class XhrBase {
           headers: headers,
           url: xhr.responseURL || headers.get('X-Request-URL')
         }
+        this._didHeadersReceived = true
         this._onHeadersReceived(options)
       }
     }
