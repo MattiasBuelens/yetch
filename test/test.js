@@ -1220,14 +1220,18 @@ exercise.forEach(function(exerciseMode) {
 
           return fetch('/slow?_=' + new Date().getTime(), {
             signal: controller.signal
-          }).then(
-            function() {
-              assert.ok(false)
-            },
-            function(error) {
-              assert.equal(error.name, 'AbortError')
-            }
-          )
+          })
+            .then(function(response) {
+              return response.text()
+            })
+            .then(
+              function() {
+                assert.ok(false)
+              },
+              function(error) {
+                assert.equal(error.name, 'AbortError')
+              }
+            )
         })
 
         test('mid-request within Request', function() {
@@ -1238,14 +1242,18 @@ exercise.forEach(function(exerciseMode) {
             controller.abort()
           }, 30)
 
-          return fetch(request).then(
-            function() {
-              assert.ok(false)
-            },
-            function(error) {
-              assert.equal(error.name, 'AbortError')
-            }
-          )
+          return fetch(request)
+            .then(function(response) {
+              return response.text()
+            })
+            .then(
+              function() {
+                assert.ok(false)
+              },
+              function(error) {
+                assert.equal(error.name, 'AbortError')
+              }
+            )
         })
 
         test('abort multiple with same signal', function() {
@@ -1258,24 +1266,32 @@ exercise.forEach(function(exerciseMode) {
           return Promise.all([
             fetch('/slow?_=' + new Date().getTime(), {
               signal: controller.signal
-            }).then(
-              function() {
-                assert.ok(false)
-              },
-              function(error) {
-                assert.equal(error.name, 'AbortError')
-              }
-            ),
+            })
+              .then(function(response) {
+                return response.text()
+              })
+              .then(
+                function() {
+                  assert.ok(false)
+                },
+                function(error) {
+                  assert.equal(error.name, 'AbortError')
+                }
+              ),
             fetch('/slow?_=' + new Date().getTime(), {
               signal: controller.signal
-            }).then(
-              function() {
-                assert.ok(false)
-              },
-              function(error) {
-                assert.equal(error.name, 'AbortError')
-              }
-            )
+            })
+              .then(function(response) {
+                return response.text()
+              })
+              .then(
+                function() {
+                  assert.ok(false)
+                },
+                function(error) {
+                  assert.equal(error.name, 'AbortError')
+                }
+              )
           ])
         })
       })
