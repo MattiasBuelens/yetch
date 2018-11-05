@@ -1,4 +1,6 @@
 var IEorEdge = /Edge\//.test(navigator.userAgent) || /MSIE/.test(navigator.userAgent)
+var Chrome = /Chrome\//.test(navigator.userAgent) && !IEorEdge
+var Safari = /Safari\//.test(navigator.userAgent) && !IEorEdge && !Chrome
 
 var support = {
   url: (function(url) {
@@ -155,12 +157,14 @@ exercise.forEach(function(exerciseMode) {
       })
     }
 
-    var nativeChrome = /Chrome\//.test(navigator.userAgent) && !IEorEdge && exerciseMode === 'native'
-    var nativeSafari = /Safari\//.test(navigator.userAgent) && !IEorEdge && exerciseMode === 'native'
+    var nativeChrome = Chrome && exerciseMode === 'native'
+    var nativeSafari = Safari && exerciseMode === 'native'
     var nativeEdge = /Edge\//.test(navigator.userAgent) && exerciseMode === 'native'
     var firefox = navigator.userAgent.match(/Firefox\/(\d+)/)
     var brokenFF = firefox && firefox[1] <= 56 && exerciseMode === 'native'
     var polyfillFirefox = firefox && exerciseMode === 'polyfill'
+    var omitSafari =
+      Safari && exerciseMode === 'native' && navigator.userAgent.match(/Version\/(\d+\.\d+)/)[1] <= '11.1'
 
     // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
     function testBodyExtract(factory) {
@@ -637,7 +641,7 @@ exercise.forEach(function(exerciseMode) {
         return new Request('', {method: 'POST', body: body})
       })
 
-      test('credentials defaults to same-origin', function() {
+      featureDependent(test, !omitSafari, 'credentials defaults to same-origin', function() {
         var request = new Request('')
         assert.equal(request.credentials, 'same-origin')
       })
@@ -1214,19 +1218,20 @@ exercise.forEach(function(exerciseMode) {
             controller.abort()
           }, 30)
 
-          var start = new Date()
-
           return fetch('/slow?_=' + new Date().getTime(), {
             signal: controller.signal
-          }).then(
-            function() {
-              assert.isAtLeast(new Date() - start, 100, 'request finished too soon')
-              assert.ok(false)
-            },
-            function(error) {
-              assert.equal(error.name, 'AbortError')
-            }
-          )
+          })
+            .then(function(response) {
+              return response.text()
+            })
+            .then(
+              function() {
+                assert.ok(false)
+              },
+              function(error) {
+                assert.equal(error.name, 'AbortError')
+              }
+            )
         })
 
         test('mid-request within Request', function() {
@@ -1237,17 +1242,18 @@ exercise.forEach(function(exerciseMode) {
             controller.abort()
           }, 30)
 
-          var start = new Date()
-
-          return fetch(request).then(
-            function() {
-              assert.isAtLeast(new Date() - start, 100, 'request finished too soon')
-              assert.ok(false)
-            },
-            function(error) {
-              assert.equal(error.name, 'AbortError')
-            }
-          )
+          return fetch(request)
+            .then(function(response) {
+              return response.text()
+            })
+            .then(
+              function() {
+                assert.ok(false)
+              },
+              function(error) {
+                assert.equal(error.name, 'AbortError')
+              }
+            )
         })
 
         test('abort multiple with same signal', function() {
@@ -1260,24 +1266,32 @@ exercise.forEach(function(exerciseMode) {
           return Promise.all([
             fetch('/slow?_=' + new Date().getTime(), {
               signal: controller.signal
-            }).then(
-              function() {
-                assert.ok(false)
-              },
-              function(error) {
-                assert.equal(error.name, 'AbortError')
-              }
-            ),
+            })
+              .then(function(response) {
+                return response.text()
+              })
+              .then(
+                function() {
+                  assert.ok(false)
+                },
+                function(error) {
+                  assert.equal(error.name, 'AbortError')
+                }
+              ),
             fetch('/slow?_=' + new Date().getTime(), {
               signal: controller.signal
-            }).then(
-              function() {
-                assert.ok(false)
-              },
-              function(error) {
-                assert.equal(error.name, 'AbortError')
-              }
-            )
+            })
+              .then(function(response) {
+                return response.text()
+              })
+              .then(
+                function() {
+                  assert.ok(false)
+                },
+                function(error) {
+                  assert.equal(error.name, 'AbortError')
+                }
+              )
           ])
         })
       })
